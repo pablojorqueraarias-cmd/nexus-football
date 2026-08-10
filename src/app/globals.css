@@ -2,25 +2,38 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0a0a0a;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-rajdhani);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Identidad Nexus Football */
+  --color-brand-50: #fdf0f5;
+  --color-brand-100: #fbdce7;
+  --color-brand-200: #f7b3cd;
+  --color-brand-300: #f37fac;
+  --color-brand-400: #f24a89;
+  --color-brand-500: #ec0851;
+  --color-brand-600: #d40749;
+  --color-brand-700: #a8053a;
+  --color-brand-800: #7c042b;
+  --color-brand-900: #52021c;
+
+  --color-ink-700: #1a1a1a;
+  --color-ink-800: #121212;
+  --color-ink-900: #0a0a0a;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
 }

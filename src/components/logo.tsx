@@ -1,0 +1,54 @@
+import Image from "next/image";
+
+export function Logo({
+  assets = { dark: null, light: null },
+  withTagline = false,
+  variant = "dark",
+  className = "",
+}: {
+  assets?: { dark: string | null; light: string | null };
+  withTagline?: boolean;
+  variant?: "dark" | "light";
+  className?: string;
+}) {
+  const src = variant === "light"
+    ? assets.light ?? assets.dark
+    : assets.dark ?? assets.light;
+
+  if (src) {
+    return (
+      <div className={`flex flex-col items-start gap-1 ${className}`}>
+        <Image
+          src={src}
+          alt="Nexus Football"
+          width={220}
+          height={70}
+          priority
+          className="h-auto w-44 object-contain"
+        />
+        {withTagline && (
+          <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-brand-500">
+            Pasión · Jerarquía · Actitud
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className={`flex flex-col items-start gap-1 ${className}`}>
+      <span
+        className={`font-display text-2xl font-bold uppercase tracking-wider ${
+          variant === "light" ? "text-white" : "text-ink-900"
+        }`}
+      >
+        Nexus<span className="text-brand-500">×</span>Football
+      </span>
+      {withTagline && (
+        <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-brand-500">
+          Pasión · Jerarquía · Actitud
+        </p>
+      )}
+    </div>
+  );
+}
