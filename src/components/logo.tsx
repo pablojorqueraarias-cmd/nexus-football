@@ -11,9 +11,9 @@ export function Logo({
   variant?: "dark" | "light";
   className?: string;
 }) {
-  const src = variant === "light"
-    ? assets.light ?? assets.dark
-    : assets.dark ?? assets.light;
+  // No se usa la imagen del otro contraste como respaldo: un logo de texto
+  // blanco sobre un fondo blanco (o negro sobre negro) sería invisible.
+  const src = variant === "light" ? assets.light : assets.dark;
 
   if (src) {
     return (
