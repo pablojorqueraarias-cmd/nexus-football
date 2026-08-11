@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { getCategories } from "@/lib/data/site-content";
+import { getCategories, getSiteContent } from "@/lib/data/site-content";
 
 export default async function HomePage() {
-  const categories = await getCategories();
+  const [categories, content] = await Promise.all([getCategories(), getSiteContent()]);
 
   return (
     <>
@@ -13,15 +13,12 @@ export default async function HomePage() {
         />
         <div className="relative mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 py-24 sm:px-6">
           <p className="text-xs font-bold uppercase tracking-[0.3em] text-brand-400">
-            Academia de fútbol · Chile
+            {content.hero_eyebrow}
           </p>
           <h1 className="font-display max-w-2xl text-5xl font-bold uppercase leading-[1.05] tracking-tight sm:text-6xl">
             Nexus <span className="text-brand-500">Football</span>
           </h1>
-          <p className="max-w-xl text-lg text-white/70">
-            Formamos jugadoras y jugadores con pasión, jerarquía y actitud —
-            desde el primer contacto con la pelota hasta la proyección a clubes.
-          </p>
+          <p className="max-w-xl text-lg text-white/70">{content.hero_description}</p>
           <div className="flex flex-wrap gap-4 pt-2">
             <Link
               href="/inscripcion"
@@ -79,10 +76,7 @@ export default async function HomePage() {
           <h2 className="font-display text-3xl font-bold uppercase tracking-tight">
             Pasión · Jerarquía · Actitud
           </h2>
-          <p className="max-w-xl text-white/90">
-            ¿Quieres que tu hijo o hija forme parte de Nexus Football? Completa
-            la inscripción y te contactaremos para confirmar el cupo.
-          </p>
+          <p className="max-w-xl text-white/90">{content.cta_description}</p>
           <Link
             href="/inscripcion"
             className="mt-2 rounded-md bg-ink-900 px-6 py-3 text-sm font-bold uppercase tracking-wide text-white transition-colors hover:bg-ink-800"

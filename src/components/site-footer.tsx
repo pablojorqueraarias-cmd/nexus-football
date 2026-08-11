@@ -1,20 +1,20 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import type { SiteContent } from "@/lib/data/site-content";
 
 export function SiteFooter({
   logoAssets,
+  content,
 }: {
   logoAssets: { dark: string | null; light: string | null };
+  content: SiteContent;
 }) {
   return (
     <footer className="bg-ink-900 text-white">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-3">
         <div>
           <Logo assets={logoAssets} variant="light" withTagline />
-          <p className="mt-4 max-w-xs text-sm text-white/60">
-            Academia de fútbol formativo en Chile, con categorías desde Iniciación
-            hasta Proyección.
-          </p>
+          <p className="mt-4 max-w-xs text-sm text-white/60">{content.footer_description}</p>
         </div>
 
         <div>
@@ -34,7 +34,7 @@ export function SiteFooter({
             Contacto
           </h3>
           <ul className="mt-3 flex flex-col gap-2 text-sm text-white/70">
-            <li>Chile</li>
+            <li>{content.location}</li>
             <li>
               <Link href="/contacto" className="hover:text-white">
                 Formulario de contacto

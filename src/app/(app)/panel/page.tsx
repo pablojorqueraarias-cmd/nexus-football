@@ -11,26 +11,25 @@ const DAY_LABELS: Record<string, string> = {
   domingo: "Domingo",
 };
 
+const DAY_ORDER = Object.keys(DAY_LABELS);
+
 export default async function PanelPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: players } = await supabase
-    .from("players")
-    .select("id, full_name, status, category:categories(id, name, age_range)")
-    .eq("parent_id", user!.id);
+  const [{ data: players }, { data: schedules }] = await Promise.all([
+    supabase
+      .from("players")
+      .select("id, full_name, status, category:categories(id, name, age_range)")
+      .eq("parent_id", user!.id),
+    supabase
+      .from("schedules")
+      .select("day_of_week, start_time, end_time, location"),
+  ]);
 
-  const categoryIds = (players ?? [])
-    .map((p) => (p.category as { id: string } | null)?.id)
-    .filter((id): id is string => Boolean(id));
-
-  const { data: schedules } =
-    categoryIds.length > 0
-      ? await supabase
-          .from("schedules")
-          .select("category_id, day_of_week, start_time, end_time, location")
-          .in("category_id", categoryIds)
-      : { data: [] as { category_id: string; day_of_week: string; start_time: string; end_time: string; location: string }[] };
+  const sortedSchedules = (schedules ?? []).sort(
+    (a, b) => DAY_ORDER.indexOf(a.day_of_week) - DAY_ORDER.indexOf(b.day_of_week)
+  );
 
   return (
     <div>
@@ -52,7 +51,6 @@ export default async function PanelPage() {
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           {players.map((player) => {
             const category = player.category as { id: string; name: string; age_range: string | null } | null;
-            const playerSchedules = (schedules ?? []).filter((s) => s.category_id === category?.id);
 
             return (
               <div key={player.id} className="rounded-xl border border-ink-900/10 p-6">
@@ -71,20 +69,25 @@ export default async function PanelPage() {
                 <p className="mt-1 text-sm text-ink-900/60">
                   Categoría: <span className="font-semibold text-ink-900">{category?.name ?? "Sin asignar"}</span>
                 </p>
-
-                {playerSchedules.length > 0 && (
-                  <ul className="mt-3 flex flex-col gap-1 text-sm text-ink-900/70">
-                    {playerSchedules.map((s, i) => (
-                      <li key={i}>
-                        {DAY_LABELS[s.day_of_week] ?? s.day_of_week} · {s.start_time.slice(0, 5)}–
-                        {s.end_time.slice(0, 5)} · {s.location}
-                      </li>
-                    ))}
-                  </ul>
-                )}
               </div>
             );
           })}
+        </div>
+      )}
+
+      {sortedSchedules.length > 0 && (
+        <div className="mt-8">
+          <h2 className="font-display text-lg font-bold uppercase text-ink-900">
+            Horario de entrenamiento
+          </h2>
+          <ul className="mt-3 flex flex-col gap-1 rounded-xl border border-ink-900/10 p-4 text-sm text-ink-900/70">
+            {sortedSchedules.map((s, i) => (
+              <li key={i}>
+                {DAY_LABELS[s.day_of_week] ?? s.day_of_week} · {s.start_time.slice(0, 5)}–
+                {s.end_time.slice(0, 5)} · {s.location}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>

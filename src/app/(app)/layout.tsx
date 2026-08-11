@@ -18,6 +18,7 @@ const ADMIN_LINKS = [
   { href: "/admin/galeria", label: "Galería" },
   { href: "/admin/mensajes", label: "Mensajes" },
   { href: "/admin/usuarios", label: "Usuarios" },
+  { href: "/admin/contenido", label: "Contenido" },
 ];
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {

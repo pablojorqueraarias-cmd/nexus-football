@@ -21,6 +21,7 @@ export async function getCategories(): Promise<CategorySummary[]> {
     const { data, error } = await supabase
       .from("categories")
       .select("id, name, age_range, description")
+      .neq("name", "General")
       .order("display_order");
 
     if (error || !data || data.length === 0) return FALLBACK_CATEGORIES;
@@ -72,6 +73,41 @@ export async function getGalleryItems(): Promise<GalleryItem[]> {
     return data;
   } catch {
     return [];
+  }
+}
+
+export type SiteContent = {
+  hero_eyebrow: string;
+  hero_description: string;
+  cta_description: string;
+  footer_description: string;
+  location: string;
+};
+
+const FALLBACK_SITE_CONTENT: SiteContent = {
+  hero_eyebrow: "Academia de fútbol · Chile",
+  hero_description:
+    "Formamos jugadoras y jugadores con pasión, jerarquía y actitud — desde el primer contacto con la pelota hasta la proyección a clubes.",
+  cta_description:
+    "¿Quieres que tu hijo o hija forme parte de Nexus Football? Completa la inscripción y te contactaremos para confirmar el cupo.",
+  footer_description:
+    "Academia de fútbol formativo en Chile, con categorías desde Iniciación hasta Proyección.",
+  location: "Chile",
+};
+
+export async function getSiteContent(): Promise<SiteContent> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("site_content")
+      .select("hero_eyebrow, hero_description, cta_description, footer_description, location")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (error || !data) return FALLBACK_SITE_CONTENT;
+    return data;
+  } catch {
+    return FALLBACK_SITE_CONTENT;
   }
 }
 

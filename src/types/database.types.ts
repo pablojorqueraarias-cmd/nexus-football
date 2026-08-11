@@ -256,6 +256,26 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["gallery_items"]["Insert"]>;
         Relationships: [];
       };
+      site_content: {
+        Row: {
+          id: number;
+          hero_eyebrow: string;
+          hero_description: string;
+          cta_description: string;
+          footer_description: string;
+          location: string;
+        };
+        Insert: {
+          id?: number;
+          hero_eyebrow?: string;
+          hero_description?: string;
+          cta_description?: string;
+          footer_description?: string;
+          location?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["site_content"]["Insert"]>;
+        Relationships: [];
+      };
     };
   };
 }
