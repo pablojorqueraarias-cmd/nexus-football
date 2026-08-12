@@ -42,7 +42,7 @@ export function Logo({
           variant === "light" ? "text-white" : "text-ink-900"
         }`}
       >
-        Nexus<span className="text-brand-500">×</span>Football
+        <span className="text-brand-500">Nexus</span>Football
       </span>
       {withTagline && (
         <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-brand-500">
