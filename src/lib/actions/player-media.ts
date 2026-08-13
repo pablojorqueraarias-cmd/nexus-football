@@ -15,73 +15,71 @@ async function assertAdmin() {
     .single();
 
   if (profile?.role !== "admin") throw new Error("Solo el administrador puede hacer esto");
+  return user.id;
 }
 
-export type GalleryFormState = { success: boolean; error?: string };
+export type PlayerMediaFormState = { success: boolean; error?: string };
 
-export async function uploadGalleryItemAction(
-  _prevState: GalleryFormState,
+export async function uploadPlayerMediaAction(
+  playerId: string,
+  _prevState: PlayerMediaFormState,
   formData: FormData
-): Promise<GalleryFormState> {
-  await assertAdmin();
+): Promise<PlayerMediaFormState> {
+  const adminId = await assertAdmin();
   const supabase = await createClient();
 
   const mediaType = (formData.get("media_type") as string) === "video" ? "video" : "photo";
   const caption = (formData.get("caption") as string) || null;
-  const categoryId = (formData.get("category_id") as string) || null;
-  const isFeatured = formData.get("is_featured") === "on";
 
   if (mediaType === "photo") {
     const file = formData.get("file") as File | null;
     if (!file || file.size === 0) return { success: false, error: "Selecciona una imagen." };
 
     const ext = file.name.split(".").pop() ?? "jpg";
-    const path = `${crypto.randomUUID()}.${ext}`;
+    const path = `${playerId}/media/${crypto.randomUUID()}.${ext}`;
 
-    const { error: uploadError } = await supabase.storage.from("gallery").upload(path, file);
+    const { error: uploadError } = await supabase.storage.from("documents").upload(path, file);
     if (uploadError) return { success: false, error: "No se pudo subir la imagen." };
 
-    const { error: insertError } = await supabase.from("gallery_items").insert({
+    const { error: insertError } = await supabase.from("player_media").insert({
+      player_id: playerId,
       media_type: "photo",
       storage_path: path,
       caption,
-      category_id: categoryId,
-      is_featured: isFeatured,
+      uploaded_by: adminId,
     });
     if (insertError) return { success: false, error: "No se pudo guardar la foto." };
   } else {
     const videoUrl = (formData.get("video_url") as string)?.trim();
     if (!videoUrl) return { success: false, error: "Pega el link del video." };
 
-    const { error: insertError } = await supabase.from("gallery_items").insert({
+    const { error: insertError } = await supabase.from("player_media").insert({
+      player_id: playerId,
       media_type: "video",
       video_url: videoUrl,
       caption,
-      category_id: categoryId,
-      is_featured: isFeatured,
+      uploaded_by: adminId,
     });
     if (insertError) return { success: false, error: "No se pudo guardar el video." };
   }
 
-  revalidatePath("/admin/galeria");
-  revalidatePath("/galeria");
-  revalidatePath("/");
-  revalidatePath("/programas");
+  revalidatePath(`/admin/jugadores/${playerId}`);
+  revalidatePath(`/panel/jugador/${playerId}`);
+  revalidatePath(`/panel/jugador/${playerId}/media`);
   return { success: true };
 }
 
-export async function deleteGalleryItemAction(itemId: string, storagePath: string | null) {
+export async function deletePlayerMediaAction(mediaId: string, storagePath: string | null, playerId: string) {
   await assertAdmin();
   const supabase = await createClient();
 
   if (storagePath) {
-    await supabase.storage.from("gallery").remove([storagePath]);
+    await supabase.storage.from("documents").remove([storagePath]);
   }
-  const { error } = await supabase.from("gallery_items").delete().eq("id", itemId);
+  const { error } = await supabase.from("player_media").delete().eq("id", mediaId);
   if (error) throw new Error(error.message);
 
-  revalidatePath("/admin/galeria");
-  revalidatePath("/galeria");
-  revalidatePath("/");
-  revalidatePath("/programas");
+  revalidatePath(`/admin/jugadores/${playerId}`);
+  revalidatePath(`/panel/jugador/${playerId}`);
+  revalidatePath(`/panel/jugador/${playerId}/media`);
 }

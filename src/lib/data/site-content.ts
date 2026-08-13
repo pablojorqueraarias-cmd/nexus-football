@@ -57,7 +57,11 @@ export async function getSchedules(): Promise<ScheduleEntry[]> {
 
 export type GalleryItem = {
   id: string;
-  storage_path: string;
+  storage_path: string | null;
+  media_type: "photo" | "video";
+  video_url: string | null;
+  category_id: string | null;
+  is_featured: boolean;
   caption: string | null;
 };
 
@@ -66,7 +70,7 @@ export async function getGalleryItems(): Promise<GalleryItem[]> {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("gallery_items")
-      .select("id, storage_path, caption")
+      .select("id, storage_path, media_type, video_url, category_id, is_featured, caption")
       .order("display_order");
 
     if (error || !data) return [];

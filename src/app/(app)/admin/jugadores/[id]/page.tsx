@@ -11,6 +11,9 @@ import { DocumentDownloadButton } from "@/components/document-download-button";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { EvaluationReportCard } from "@/components/evaluations/evaluation-report-card";
 import { groupEvaluationByPhase } from "@/lib/evaluation-report";
+import { PlayerMediaUploadForm } from "@/components/admin/player-media-upload-form";
+import { PlayerMediaGrid } from "@/components/player-media-grid";
+import { getPlayerMediaWithUrls } from "@/lib/data/player-media";
 
 const CATEGORY_LABELS: Record<string, string> = {
   antropometrica: "Evaluación antropométrica",
@@ -37,7 +40,7 @@ export default async function AdminJugadorDetallePage({
 
   if (!player) notFound();
 
-  const [{ data: positions }, { data: evaluations }, { data: stats }, { data: documents }] =
+  const [{ data: positions }, { data: evaluations }, { data: stats }, { data: documents }, media] =
     await Promise.all([
       supabase.from("positions").select("id, name").order("display_order"),
       supabase
@@ -47,6 +50,7 @@ export default async function AdminJugadorDetallePage({
         .order("created_at", { ascending: false }),
       supabase.from("player_stats_summary").select("*").eq("player_id", id).maybeSingle(),
       supabase.from("player_documents").select("*").eq("player_id", id).order("uploaded_at", { ascending: false }),
+      getPlayerMediaWithUrls(id),
     ]);
 
   let pendingInvite: { email: string } | null = null;
@@ -261,6 +265,16 @@ export default async function AdminJugadorDetallePage({
             ))}
           </ul>
         )}
+      </div>
+
+      <div>
+        <h2 className="font-display text-lg font-bold uppercase text-ink-900">Fotos y videos</h2>
+        <div className="mt-4">
+          <PlayerMediaUploadForm playerId={id} />
+        </div>
+        <div className="mt-4">
+          <PlayerMediaGrid items={media} playerId={id} editable />
+        </div>
       </div>
     </div>
   );

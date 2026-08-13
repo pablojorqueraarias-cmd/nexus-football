@@ -58,7 +58,7 @@ export default async function JugadorFichaPage({
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Link href={`/panel/jugador/${playerId}/asistencia`} className="rounded-xl border border-ink-900/10 p-4 hover:shadow-lg">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-900/50">Asistencia</h2>
           <p className="font-display mt-2 text-2xl font-bold text-ink-900">
@@ -81,6 +81,11 @@ export default async function JugadorFichaPage({
         <Link href={`/panel/jugador/${playerId}/documentos`} className="rounded-xl border border-ink-900/10 p-4 hover:shadow-lg">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-900/50">Documentos</h2>
           <p className="mt-2 text-sm font-semibold text-brand-500">Ver documentos →</p>
+        </Link>
+
+        <Link href={`/panel/jugador/${playerId}/media`} className="rounded-xl border border-ink-900/10 p-4 hover:shadow-lg">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-900/50">Fotos y videos</h2>
+          <p className="mt-2 text-sm font-semibold text-brand-500">Ver fotos y videos →</p>
         </Link>
       </div>
 

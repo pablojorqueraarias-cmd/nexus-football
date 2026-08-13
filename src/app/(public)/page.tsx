@@ -1,8 +1,15 @@
+import Image from "next/image";
 import Link from "next/link";
-import { getCategories, getSiteContent } from "@/lib/data/site-content";
+import { getCategories, getGalleryItems, getSiteContent, publicGalleryUrl } from "@/lib/data/site-content";
+import { VideoEmbed } from "@/components/video-embed";
 
 export default async function HomePage() {
-  const [categories, content] = await Promise.all([getCategories(), getSiteContent()]);
+  const [categories, content, gallery] = await Promise.all([
+    getCategories(),
+    getSiteContent(),
+    getGalleryItems(),
+  ]);
+  const featured = gallery.filter((item) => item.is_featured).slice(0, 8);
 
   return (
     <>
@@ -70,6 +77,39 @@ export default async function HomePage() {
           </Link>
         </div>
       </section>
+
+      {featured.length > 0 && (
+        <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
+          <h2 className="font-display text-center text-3xl font-bold uppercase tracking-tight text-ink-900">
+            Momentos destacados
+          </h2>
+          <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {featured.map((item) => (
+              <div key={item.id} className="relative aspect-square overflow-hidden rounded-lg bg-ink-900/5">
+                {item.media_type === "video" && item.video_url ? (
+                  <VideoEmbed url={item.video_url} className="h-full w-full" />
+                ) : (
+                  <Image
+                    src={publicGalleryUrl(item.storage_path!)}
+                    alt={item.caption ?? "Nexus Football"}
+                    fill
+                    sizes="(max-width: 640px) 50vw, 25vw"
+                    className="object-cover"
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="mt-8 text-center">
+            <Link
+              href="/galeria"
+              className="text-sm font-bold uppercase tracking-wide text-brand-500 hover:text-brand-600"
+            >
+              Ver toda la galería →
+            </Link>
+          </div>
+        </section>
+      )}
 
       <section className="bg-brand-500 text-white">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 py-16 text-center sm:px-6">

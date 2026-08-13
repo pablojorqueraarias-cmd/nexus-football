@@ -1,25 +1,22 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
-import { uploadGalleryItemAction, type GalleryFormState } from "@/lib/actions/gallery";
+import { uploadPlayerMediaAction, type PlayerMediaFormState } from "@/lib/actions/player-media";
 
-const initialState: GalleryFormState = { success: false };
+const initialState: PlayerMediaFormState = { success: false };
 
-export function GalleryUploadForm({
-  categories,
-}: {
-  categories: { id: string; name: string }[];
-}) {
+export function PlayerMediaUploadForm({ playerId }: { playerId: string }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [mediaType, setMediaType] = useState<"photo" | "video">("photo");
-  const [state, action, pending] = useActionState(async (prev: GalleryFormState, formData: FormData) => {
-    const result = await uploadGalleryItemAction(prev, formData);
+  const action = uploadPlayerMediaAction.bind(null, playerId);
+  const [state, formAction, pending] = useActionState(async (prev: PlayerMediaFormState, formData: FormData) => {
+    const result = await action(prev, formData);
     if (result.success) formRef.current?.reset();
     return result;
   }, initialState);
 
   return (
-    <form ref={formRef} action={action} className="flex flex-wrap items-end gap-3 rounded-xl border border-ink-900/10 p-4">
+    <form ref={formRef} action={formAction} className="flex flex-wrap items-end gap-3 rounded-xl border border-ink-900/10 p-4">
       <div className="flex flex-col gap-1">
         <label className="text-xs font-semibold uppercase text-ink-900/60">Tipo</label>
         <div className="flex overflow-hidden rounded-md border border-ink-900/15">
@@ -70,29 +67,12 @@ export function GalleryUploadForm({
         <input id="caption" name="caption" className="rounded-md border border-ink-900/15 px-3 py-2 text-sm" />
       </div>
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="category_id" className="text-xs font-semibold uppercase text-ink-900/60">
-          Categoría (opcional)
-        </label>
-        <select id="category_id" name="category_id" className="rounded-md border border-ink-900/15 px-3 py-2 text-sm">
-          <option value="">General</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
-      </div>
-
-      <label className="flex items-center gap-2 pb-2 text-xs font-semibold text-ink-900/70">
-        <input type="checkbox" name="is_featured" />
-        Destacar en inicio
-      </label>
-
       <button
         type="submit"
         disabled={pending}
         className="rounded-md bg-brand-500 px-4 py-2 text-sm font-bold uppercase tracking-wide text-white hover:bg-brand-600 disabled:opacity-50"
       >
-        {pending ? "Guardando..." : "Publicar"}
+        {pending ? "Guardando..." : "Subir"}
       </button>
       {state.error && <p className="w-full text-sm text-red-600">{state.error}</p>}
     </form>

@@ -16,6 +16,7 @@ export type DayOfWeek =
   | "sabado"
   | "domingo";
 export type CriterionPhase = "general" | "defensiva" | "ofensiva";
+export type MediaType = "photo" | "video";
 
 export interface Database {
   public: {
@@ -272,19 +273,66 @@ export interface Database {
       gallery_items: {
         Row: {
           id: string;
-          storage_path: string;
+          storage_path: string | null;
+          media_type: MediaType;
+          video_url: string | null;
+          category_id: string | null;
+          is_featured: boolean;
           caption: string | null;
           display_order: number;
           created_at: string;
         };
         Insert: {
           id?: string;
-          storage_path: string;
+          storage_path?: string | null;
+          media_type?: MediaType;
+          video_url?: string | null;
+          category_id?: string | null;
+          is_featured?: boolean;
           caption?: string | null;
           display_order?: number;
         };
         Update: Partial<Database["public"]["Tables"]["gallery_items"]["Insert"]>;
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "gallery_items_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      player_media: {
+        Row: {
+          id: string;
+          player_id: string;
+          media_type: MediaType;
+          storage_path: string | null;
+          video_url: string | null;
+          caption: string | null;
+          uploaded_by: string | null;
+          uploaded_at: string;
+        };
+        Insert: {
+          id?: string;
+          player_id: string;
+          media_type: MediaType;
+          storage_path?: string | null;
+          video_url?: string | null;
+          caption?: string | null;
+          uploaded_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["player_media"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "player_media_player_id_fkey";
+            columns: ["player_id"];
+            isOneToOne: false;
+            referencedRelation: "players";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       site_content: {
         Row: {
