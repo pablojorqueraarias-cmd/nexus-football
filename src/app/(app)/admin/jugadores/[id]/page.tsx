@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { deleteEvaluationAction } from "@/lib/actions/evaluations";
 import { deleteDocumentAction } from "@/lib/actions/documents";
 import { invitePlayerAction } from "@/lib/actions/players";
@@ -47,6 +48,14 @@ export default async function AdminJugadorDetallePage({
       supabase.from("player_stats_summary").select("*").eq("player_id", id).maybeSingle(),
       supabase.from("player_documents").select("*").eq("player_id", id).order("uploaded_at", { ascending: false }),
     ]);
+
+  let pendingInvite: { email: string } | null = null;
+  if (player.user_id) {
+    const { data: authUser } = await createAdminClient().auth.admin.getUserById(player.user_id);
+    if (authUser.user && !authUser.user.email_confirmed_at) {
+      pendingInvite = { email: authUser.user.email ?? "" };
+    }
+  }
 
   const category = player.category as { name: string } | null;
   const parent = player.parent as { full_name: string } | null;
@@ -104,8 +113,24 @@ export default async function AdminJugadorDetallePage({
         <h2 className="font-display text-sm font-bold uppercase tracking-wide text-ink-900/70">
           Acceso del jugador/a
         </h2>
-        {player.user_id ? (
+        {player.user_id && !pendingInvite ? (
           <p className="mt-2 text-sm text-green-700">Ya tiene una cuenta propia para ingresar.</p>
+        ) : pendingInvite ? (
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <p className="text-sm text-amber-700">
+              Invitación enviada a {pendingInvite.email}, todavía no ha ingresado.
+            </p>
+            <form action={invitePlayerAction.bind(null, id)}>
+              <input type="hidden" name="player_email" value={pendingInvite.email} />
+              <input type="hidden" name="player_full_name" value={player.full_name} />
+              <button
+                type="submit"
+                className="rounded-md border border-brand-500 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-brand-500 hover:bg-brand-50"
+              >
+                Reenviar invitación
+              </button>
+            </form>
+          </div>
         ) : (
           <form action={invitePlayerAction.bind(null, id)} className="mt-3 flex flex-wrap items-end gap-3">
             <div className="flex flex-col gap-1">
