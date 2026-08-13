@@ -9,10 +9,19 @@ const PARENT_LINKS = [
   { href: "/panel/perfil", label: "Perfil" },
 ];
 
+const PLAYER_LINKS = [
+  { href: "/panel", label: "Resumen" },
+  { href: "/panel/perfil", label: "Perfil" },
+];
+
 const ADMIN_LINKS = [
   { href: "/admin", label: "Resumen" },
   { href: "/admin/inscripciones", label: "Inscripciones" },
   { href: "/admin/jugadores", label: "Alumnos" },
+  { href: "/admin/asistencia", label: "Asistencia" },
+  { href: "/admin/partidos", label: "Partidos" },
+  { href: "/admin/ranking", label: "Ranking" },
+  { href: "/admin/criterios", label: "Criterios" },
   { href: "/admin/pagos", label: "Pagos" },
   { href: "/admin/horarios", label: "Horarios" },
   { href: "/admin/galeria", label: "Galería" },
@@ -21,6 +30,12 @@ const ADMIN_LINKS = [
   { href: "/admin/contenido", label: "Contenido" },
 ];
 
+const ROLE_LABELS: Record<string, string> = {
+  admin: "Admin",
+  parent: "Apoderado",
+  player: "Jugador/a",
+};
+
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const profile = await getCurrentProfile();
 
@@ -28,7 +43,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect("/login");
   }
 
-  const links = profile.role === "admin" ? ADMIN_LINKS : PARENT_LINKS;
+  const links =
+    profile.role === "admin" ? ADMIN_LINKS : profile.role === "player" ? PLAYER_LINKS : PARENT_LINKS;
   const homeHref = profile.role === "admin" ? "/admin" : "/panel";
 
   return (
@@ -55,7 +71,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <span className="text-sm text-white/60">
               {profile.full_name}{" "}
               <span className="ml-1 rounded-full bg-white/10 px-2 py-0.5 text-xs uppercase tracking-wide text-white/80">
-                {profile.role === "admin" ? "Admin" : "Apoderado"}
+                {ROLE_LABELS[profile.role] ?? profile.role}
               </span>
             </span>
             <SignOutButton />

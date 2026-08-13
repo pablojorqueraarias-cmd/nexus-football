@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
-async function count(supabase: Awaited<ReturnType<typeof createClient>>, table: string, match?: Record<string, unknown>) {
+async function count(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  table: "inscriptions" | "players" | "payments" | "contact_messages",
+  match?: Record<string, unknown>
+) {
   let query = supabase.from(table).select("*", { count: "exact", head: true });
   if (match) query = query.match(match);
   const { count } = await query;

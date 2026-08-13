@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile } from "@/lib/auth";
 
 const DAY_LABELS: Record<string, string> = {
   lunes: "Lunes",
@@ -14,8 +16,19 @@ const DAY_LABELS: Record<string, string> = {
 const DAY_ORDER = Object.keys(DAY_LABELS);
 
 export default async function PanelPage() {
+  const profile = await getCurrentProfile();
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+
+  if (profile?.role === "player") {
+    const { data: own } = await supabase
+      .from("players")
+      .select("id")
+      .eq("user_id", user!.id)
+      .maybeSingle();
+
+    if (own) redirect(`/panel/jugador/${own.id}`);
+  }
 
   const [{ data: players }, { data: schedules }] = await Promise.all([
     supabase
@@ -53,7 +66,11 @@ export default async function PanelPage() {
             const category = player.category as { id: string; name: string; age_range: string | null } | null;
 
             return (
-              <div key={player.id} className="rounded-xl border border-ink-900/10 p-6">
+              <Link
+                key={player.id}
+                href={`/panel/jugador/${player.id}`}
+                className="rounded-xl border border-ink-900/10 p-6 transition-shadow hover:shadow-lg"
+              >
                 <div className="flex items-center justify-between">
                   <h2 className="font-display text-xl font-bold text-ink-900">{player.full_name}</h2>
                   <span
@@ -69,7 +86,10 @@ export default async function PanelPage() {
                 <p className="mt-1 text-sm text-ink-900/60">
                   Categoría: <span className="font-semibold text-ink-900">{category?.name ?? "Sin asignar"}</span>
                 </p>
-              </div>
+                <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-brand-500">
+                  Ver ficha →
+                </p>
+              </Link>
             );
           })}
         </div>

@@ -1,8 +1,8 @@
-// Tipos escritos a mano reflejando supabase/schema.sql.
-// Reemplazar por el output de `supabase gen types typescript` una vez
-// el proyecto Supabase esté conectado (ver README de setup).
+// Tipos escritos a mano reflejando supabase/schema.sql +
+// supabase/migration_site_content.sql + supabase/migration_player_features.sql.
+// Reemplazar por el output de `supabase gen types typescript` cuando se pueda.
 
-export type UserRole = "admin" | "parent";
+export type UserRole = "admin" | "parent" | "player";
 export type PlayerStatus = "activo" | "inactivo";
 export type InscriptionStatus = "pendiente" | "aprobada" | "rechazada";
 export type PaymentMethod = "transferencia" | "efectivo";
@@ -15,10 +15,24 @@ export type DayOfWeek =
   | "viernes"
   | "sabado"
   | "domingo";
+export type CriterionPhase = "general" | "defensiva" | "ofensiva";
 
 export interface Database {
   public: {
-    Views: Record<string, never>;
+    Views: {
+      player_stats_summary: {
+        Row: {
+          player_id: string;
+          full_name: string;
+          total_minutes: number;
+          total_goals: number;
+          total_assists: number;
+          sessions_present: number;
+          sessions_total: number;
+        };
+        Relationships: [];
+      };
+    };
     Functions: Record<string, never>;
     Tables: {
       profiles: {
@@ -93,6 +107,8 @@ export interface Database {
           birth_date: string | null;
           category_id: string | null;
           parent_id: string | null;
+          user_id: string | null;
+          position_id: string | null;
           status: PlayerStatus;
           notes: string | null;
           photo_url: string | null;
@@ -105,6 +121,8 @@ export interface Database {
           birth_date?: string | null;
           category_id?: string | null;
           parent_id?: string | null;
+          user_id?: string | null;
+          position_id?: string | null;
           status?: PlayerStatus;
           notes?: string | null;
           photo_url?: string | null;
@@ -123,6 +141,13 @@ export interface Database {
             columns: ["parent_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "players_position_id_fkey";
+            columns: ["position_id"];
+            isOneToOne: false;
+            referencedRelation: "positions";
             referencedColumns: ["id"];
           }
         ];
@@ -275,6 +300,244 @@ export interface Database {
         };
         Update: Partial<Database["public"]["Tables"]["site_content"]["Insert"]>;
         Relationships: [];
+      };
+      positions: {
+        Row: {
+          id: string;
+          code: string;
+          name: string;
+          has_phases: boolean;
+          display_order: number;
+        };
+        Insert: {
+          id?: string;
+          code: string;
+          name: string;
+          has_phases?: boolean;
+          display_order?: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["positions"]["Insert"]>;
+        Relationships: [];
+      };
+      checklist_criteria: {
+        Row: {
+          id: string;
+          position_id: string | null;
+          phase: CriterionPhase;
+          label: string;
+          description: string | null;
+          display_order: number;
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          position_id?: string | null;
+          phase?: CriterionPhase;
+          label: string;
+          description?: string | null;
+          display_order?: number;
+          is_active?: boolean;
+        };
+        Update: Partial<Database["public"]["Tables"]["checklist_criteria"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "checklist_criteria_position_id_fkey";
+            columns: ["position_id"];
+            isOneToOne: false;
+            referencedRelation: "positions";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      evaluations: {
+        Row: {
+          id: string;
+          player_id: string;
+          evaluated_by: string;
+          strengths: string | null;
+          weaknesses: string | null;
+          conclusion: string | null;
+          match_context: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          player_id: string;
+          evaluated_by: string;
+          strengths?: string | null;
+          weaknesses?: string | null;
+          conclusion?: string | null;
+          match_context?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["evaluations"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "evaluations_player_id_fkey";
+            columns: ["player_id"];
+            isOneToOne: false;
+            referencedRelation: "players";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "evaluations_evaluated_by_fkey";
+            columns: ["evaluated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      evaluation_items: {
+        Row: {
+          id: string;
+          evaluation_id: string;
+          criterion_id: string;
+          meets: boolean | null;
+        };
+        Insert: {
+          id?: string;
+          evaluation_id: string;
+          criterion_id: string;
+          meets?: boolean | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["evaluation_items"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "evaluation_items_evaluation_id_fkey";
+            columns: ["evaluation_id"];
+            isOneToOne: false;
+            referencedRelation: "evaluations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "evaluation_items_criterion_id_fkey";
+            columns: ["criterion_id"];
+            isOneToOne: false;
+            referencedRelation: "checklist_criteria";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      attendance: {
+        Row: {
+          id: string;
+          player_id: string;
+          session_date: string;
+          present: boolean;
+          notes: string | null;
+          recorded_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          player_id: string;
+          session_date: string;
+          present?: boolean;
+          notes?: string | null;
+          recorded_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["attendance"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "attendance_player_id_fkey";
+            columns: ["player_id"];
+            isOneToOne: false;
+            referencedRelation: "players";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      matches: {
+        Row: {
+          id: string;
+          match_date: string;
+          opponent: string | null;
+          category_id: string | null;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          match_date: string;
+          opponent?: string | null;
+          category_id?: string | null;
+          notes?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["matches"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "matches_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      player_match_stats: {
+        Row: {
+          id: string;
+          match_id: string;
+          player_id: string;
+          minutes_played: number;
+          goals: number;
+          assists: number;
+        };
+        Insert: {
+          id?: string;
+          match_id: string;
+          player_id: string;
+          minutes_played?: number;
+          goals?: number;
+          assists?: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["player_match_stats"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "player_match_stats_match_id_fkey";
+            columns: ["match_id"];
+            isOneToOne: false;
+            referencedRelation: "matches";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "player_match_stats_player_id_fkey";
+            columns: ["player_id"];
+            isOneToOne: false;
+            referencedRelation: "players";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      player_documents: {
+        Row: {
+          id: string;
+          player_id: string;
+          storage_path: string;
+          file_name: string;
+          category: string | null;
+          uploaded_by: string | null;
+          uploaded_at: string;
+        };
+        Insert: {
+          id?: string;
+          player_id: string;
+          storage_path: string;
+          file_name: string;
+          category?: string | null;
+          uploaded_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["player_documents"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "player_documents_player_id_fkey";
+            columns: ["player_id"];
+            isOneToOne: false;
+            referencedRelation: "players";
+            referencedColumns: ["id"];
+          }
+        ];
       };
     };
   };

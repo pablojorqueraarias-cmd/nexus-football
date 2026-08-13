@@ -45,17 +45,29 @@ export default async function AdminJugadoresPage() {
               const parent = p.parent as { full_name: string; id: string } | null;
               return (
                 <tr key={p.id} className="border-t border-ink-900/5">
-                  <td className="px-4 py-3 font-semibold text-ink-900">{p.full_name}</td>
+                  <td className="px-4 py-3 font-semibold text-ink-900">
+                    <Link href={`/admin/jugadores/${p.id}`} className="hover:text-brand-500 hover:underline">
+                      {p.full_name}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3">{category?.name ?? "—"}</td>
                   <td className="px-4 py-3">{parent?.full_name ?? "Sin asignar"}</td>
                   <td className="px-4 py-3">
                     <PlayerStatusSelect playerId={p.id} status={p.status} />
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <DeleteButton
-                      action={deletePlayerAction.bind(null, p.id)}
-                      confirmMessage={`¿Eliminar a ${p.full_name}? Esta acción no se puede deshacer.`}
-                    />
+                    <div className="flex items-center justify-end gap-3">
+                      <Link
+                        href={`/admin/jugadores/${p.id}`}
+                        className="text-xs font-semibold uppercase tracking-wide text-brand-500 hover:text-brand-600"
+                      >
+                        Ver ficha
+                      </Link>
+                      <DeleteButton
+                        action={deletePlayerAction.bind(null, p.id)}
+                        confirmMessage={`¿Eliminar a ${p.full_name}? Esta acción no se puede deshacer.`}
+                      />
+                    </div>
                   </td>
                 </tr>
               );

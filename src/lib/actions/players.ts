@@ -1,8 +1,10 @@
 "use server";
 
 import { z } from "zod";
+import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { PlayerStatus } from "@/types/database.types";
 
 async function assertAdmin() {
@@ -17,6 +19,13 @@ async function assertAdmin() {
     .single();
 
   if (profile?.role !== "admin") throw new Error("Solo el administrador puede hacer esto");
+}
+
+async function getSiteOrigin() {
+  const h = await headers();
+  const proto = h.get("x-forwarded-proto") ?? "http";
+  const host = h.get("host");
+  return `${proto}://${host}`;
 }
 
 const playerSchema = z.object({
@@ -80,4 +89,55 @@ export async function deletePlayerAction(playerId: string) {
   const { error } = await supabase.from("players").delete().eq("id", playerId);
   if (error) throw new Error(error.message);
   revalidatePath("/admin/jugadores");
+}
+
+export async function setPlayerPositionAction(playerId: string, positionId: string | null) {
+  await assertAdmin();
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("players")
+    .update({ position_id: positionId })
+    .eq("id", playerId);
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/jugadores/${playerId}`);
+}
+
+export async function invitePlayerAction(playerId: string, formData: FormData) {
+  await assertAdmin();
+
+  const email = (formData.get("player_email") as string)?.trim();
+  const fullName = (formData.get("player_full_name") as string)?.trim();
+
+  if (!email || !fullName) throw new Error("Correo y nombre son obligatorios");
+
+  const admin = createAdminClient();
+  const origin = await getSiteOrigin();
+
+  let { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
+    data: { full_name: fullName },
+    redirectTo: `${origin}/set-password`,
+  });
+
+  if (error && error.code === "email_exists") {
+    const { data: existing } = await admin.auth.admin.listUsers();
+    const previous = existing?.users.find((u) => u.email === email);
+
+    if (previous && !previous.email_confirmed_at) {
+      await admin.auth.admin.deleteUser(previous.id);
+      ({ data, error } = await admin.auth.admin.inviteUserByEmail(email, {
+        data: { full_name: fullName },
+        redirectTo: `${origin}/set-password`,
+      }));
+    } else if (previous) {
+      throw new Error("Ese correo ya tiene una cuenta activa.");
+    }
+  }
+
+  if (error) throw new Error(error.message);
+  if (!data.user) throw new Error("No se pudo crear la cuenta.");
+
+  await admin.from("profiles").update({ role: "player" }).eq("id", data.user.id);
+  await admin.from("players").update({ user_id: data.user.id }).eq("id", playerId);
+
+  revalidatePath(`/admin/jugadores/${playerId}`);
 }

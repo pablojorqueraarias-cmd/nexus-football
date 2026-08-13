@@ -40,7 +40,7 @@ export function SiteContentForm({ content }: { content: SiteContent }) {
 
       <div className="flex flex-col gap-1">
         <label htmlFor="cta_description" className="text-sm font-semibold text-ink-900">
-          Texto de la sección "Inscríbete ahora" (inicio)
+          Texto de la sección &quot;Inscríbete ahora&quot; (inicio)
         </label>
         <textarea
           id="cta_description"
