@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getSiteContent } from "@/lib/data/site-content";
+import { BankTransferCard } from "@/components/bank-transfer-card";
 
 const DAY_LABELS: Record<string, string> = {
   lunes: "Lunes",
@@ -30,7 +32,7 @@ export default async function JugadorFichaPage({
 
   if (!player) notFound();
 
-  const [{ data: schedules }, { data: stats }, { data: latestEvaluation }] = await Promise.all([
+  const [{ data: schedules }, { data: stats }, { data: latestEvaluation }, content] = await Promise.all([
     supabase.from("schedules").select("day_of_week, start_time, end_time, location"),
     supabase.from("player_stats_summary").select("*").eq("player_id", playerId).maybeSingle(),
     supabase
@@ -40,6 +42,7 @@ export default async function JugadorFichaPage({
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
+    getSiteContent(),
   ]);
 
   const category = player.category as { name: string; age_range: string | null } | null;
@@ -65,10 +68,13 @@ export default async function JugadorFichaPage({
 
         <Link href={`/panel/jugador/${playerId}/estadisticas`} className="rounded-xl border border-ink-900/10 p-4 hover:shadow-lg">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-900/50">
-            Minutos · Goles · Asistencias
+            Partidos jugados
           </h2>
           <p className="font-display mt-2 text-2xl font-bold text-ink-900">
-            {stats?.total_minutes ?? 0}′ · {stats?.total_goals ?? 0} · {stats?.total_assists ?? 0}
+            {stats?.matches_played ?? 0}
+          </p>
+          <p className="mt-1 text-xs text-ink-900/50">
+            {stats?.total_minutes ?? 0}′ · {stats?.total_goals ?? 0} goles · {stats?.total_assists ?? 0} asistencias
           </p>
         </Link>
 
@@ -100,6 +106,8 @@ export default async function JugadorFichaPage({
           <p className="mt-2 text-sm text-ink-900/50">Aún no hay evaluaciones registradas.</p>
         )}
       </div>
+
+      <BankTransferCard content={content} />
 
       {schedules && schedules.length > 0 && (
         <div>

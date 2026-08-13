@@ -27,6 +27,7 @@ export interface Database {
           total_minutes: number;
           total_goals: number;
           total_assists: number;
+          matches_played: number;
           sessions_present: number;
           sessions_total: number;
         };
@@ -110,6 +111,7 @@ export interface Database {
           user_id: string | null;
           position_id: string | null;
           status: PlayerStatus;
+          is_scholarship: boolean;
           notes: string | null;
           photo_url: string | null;
           created_at: string;
@@ -124,6 +126,7 @@ export interface Database {
           user_id?: string | null;
           position_id?: string | null;
           status?: PlayerStatus;
+          is_scholarship?: boolean;
           notes?: string | null;
           photo_url?: string | null;
         };
@@ -213,6 +216,7 @@ export interface Database {
           amount: number;
           method: PaymentMethod;
           status: PaymentStatus;
+          due_date: string | null;
           registered_by: string | null;
           created_at: string;
         };
@@ -223,6 +227,7 @@ export interface Database {
           amount: number;
           method?: PaymentMethod;
           status?: PaymentStatus;
+          due_date?: string | null;
           registered_by?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["payments"]["Insert"]>;
@@ -289,6 +294,12 @@ export interface Database {
           cta_description: string;
           footer_description: string;
           location: string;
+          bank_name: string | null;
+          bank_account_type: string | null;
+          bank_account_number: string | null;
+          bank_account_holder: string | null;
+          bank_account_rut: string | null;
+          bank_transfer_email: string | null;
         };
         Insert: {
           id?: number;
@@ -297,6 +308,12 @@ export interface Database {
           cta_description?: string;
           footer_description?: string;
           location?: string;
+          bank_name?: string | null;
+          bank_account_type?: string | null;
+          bank_account_number?: string | null;
+          bank_account_holder?: string | null;
+          bank_account_rut?: string | null;
+          bank_transfer_email?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["site_content"]["Insert"]>;
         Relationships: [];
@@ -393,13 +410,15 @@ export interface Database {
           id: string;
           evaluation_id: string;
           criterion_id: string;
-          meets: boolean | null;
+          score: number;
+          comment: string | null;
         };
         Insert: {
           id?: string;
           evaluation_id: string;
           criterion_id: string;
-          meets?: boolean | null;
+          score: number;
+          comment?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["evaluation_items"]["Insert"]>;
         Relationships: [

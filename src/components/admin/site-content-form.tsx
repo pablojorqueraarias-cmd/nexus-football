@@ -79,6 +79,76 @@ export function SiteContentForm({ content }: { content: SiteContent }) {
         />
       </div>
 
+      <div className="mt-4 flex flex-col gap-4 border-t border-ink-900/10 pt-4">
+        <div>
+          <h2 className="font-display text-sm font-bold uppercase tracking-wide text-ink-900/70">
+            Datos para transferencia
+          </h2>
+          <p className="mt-1 text-xs text-ink-900/50">
+            Se muestran automáticamente a apoderados y jugadores en la sección de pagos.
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-1">
+            <label htmlFor="bank_name" className="text-sm font-semibold text-ink-900">Banco</label>
+            <input
+              id="bank_name"
+              name="bank_name"
+              defaultValue={content.bank_name ?? ""}
+              className="rounded-md border border-ink-900/15 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="bank_account_type" className="text-sm font-semibold text-ink-900">Tipo de cuenta</label>
+            <input
+              id="bank_account_type"
+              name="bank_account_type"
+              placeholder="Ej: Cuenta Vista, Corriente"
+              defaultValue={content.bank_account_type ?? ""}
+              className="rounded-md border border-ink-900/15 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="bank_account_number" className="text-sm font-semibold text-ink-900">Número de cuenta</label>
+            <input
+              id="bank_account_number"
+              name="bank_account_number"
+              defaultValue={content.bank_account_number ?? ""}
+              className="rounded-md border border-ink-900/15 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="bank_account_rut" className="text-sm font-semibold text-ink-900">RUT del titular</label>
+            <input
+              id="bank_account_rut"
+              name="bank_account_rut"
+              defaultValue={content.bank_account_rut ?? ""}
+              className="rounded-md border border-ink-900/15 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="bank_account_holder" className="text-sm font-semibold text-ink-900">Nombre del titular</label>
+            <input
+              id="bank_account_holder"
+              name="bank_account_holder"
+              defaultValue={content.bank_account_holder ?? ""}
+              className="rounded-md border border-ink-900/15 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="bank_transfer_email" className="text-sm font-semibold text-ink-900">Correo para enviar comprobante</label>
+            <input
+              id="bank_transfer_email"
+              name="bank_transfer_email"
+              type="email"
+              defaultValue={content.bank_transfer_email ?? ""}
+              className="rounded-md border border-ink-900/15 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+            />
+          </div>
+        </div>
+      </div>
+
       {state.error && <p className="text-sm text-red-600">{state.error}</p>}
       {state.success && <p className="text-sm text-green-700">Guardado.</p>}
 

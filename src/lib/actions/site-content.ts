@@ -10,6 +10,12 @@ const schema = z.object({
   cta_description: z.string().min(10, "Muy corto."),
   footer_description: z.string().min(10, "Muy corto."),
   location: z.string().min(2, "Muy corto."),
+  bank_name: z.string().optional(),
+  bank_account_type: z.string().optional(),
+  bank_account_number: z.string().optional(),
+  bank_account_holder: z.string().optional(),
+  bank_account_rut: z.string().optional(),
+  bank_transfer_email: z.string().optional(),
 });
 
 export type SiteContentFormState = { success: boolean; error?: string };
@@ -38,6 +44,12 @@ export async function updateSiteContentAction(
     cta_description: formData.get("cta_description"),
     footer_description: formData.get("footer_description"),
     location: formData.get("location"),
+    bank_name: formData.get("bank_name"),
+    bank_account_type: formData.get("bank_account_type"),
+    bank_account_number: formData.get("bank_account_number"),
+    bank_account_holder: formData.get("bank_account_holder"),
+    bank_account_rut: formData.get("bank_account_rut"),
+    bank_transfer_email: formData.get("bank_transfer_email"),
   });
 
   if (!parsed.success) {
@@ -46,12 +58,22 @@ export async function updateSiteContentAction(
 
   const { error } = await supabase
     .from("site_content")
-    .update(parsed.data)
+    .update({
+      ...parsed.data,
+      bank_name: parsed.data.bank_name || null,
+      bank_account_type: parsed.data.bank_account_type || null,
+      bank_account_number: parsed.data.bank_account_number || null,
+      bank_account_holder: parsed.data.bank_account_holder || null,
+      bank_account_rut: parsed.data.bank_account_rut || null,
+      bank_transfer_email: parsed.data.bank_transfer_email || null,
+    })
     .eq("id", 1);
 
   if (error) return { success: false, error: "No se pudo guardar. Intenta de nuevo." };
 
   revalidatePath("/");
+  revalidatePath("/panel/pagos");
+  revalidatePath("/panel/jugador", "layout");
   revalidatePath("/admin/contenido");
   return { success: true };
 }

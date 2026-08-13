@@ -26,6 +26,7 @@ const paymentSchema = z.object({
   amount: z.coerce.number().positive("El monto debe ser mayor a 0."),
   method: z.enum(["transferencia", "efectivo"]),
   status: z.enum(["pendiente", "pagado"]),
+  due_date: z.string().optional(),
 });
 
 export async function createPaymentAction(formData: FormData) {
@@ -38,14 +39,26 @@ export async function createPaymentAction(formData: FormData) {
     amount: formData.get("amount"),
     method: formData.get("method") || "transferencia",
     status: formData.get("status") || "pendiente",
+    due_date: (formData.get("due_date") as string) || undefined,
   });
+
+  const { due_date, ...rest } = parsed;
 
   const { error } = await supabase
     .from("payments")
-    .insert({ ...parsed, registered_by: adminId });
+    .insert({ ...rest, due_date: due_date || null, registered_by: adminId });
 
   if (error) throw new Error(error.message);
   revalidatePath("/admin/pagos");
+}
+
+export async function setPaymentDueDateAction(paymentId: string, dueDate: string | null) {
+  await assertAdmin();
+  const supabase = await createClient();
+  const { error } = await supabase.from("payments").update({ due_date: dueDate }).eq("id", paymentId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/pagos");
+  revalidatePath("/panel/pagos");
 }
 
 export async function setPaymentStatusAction(paymentId: string, status: PaymentStatus) {

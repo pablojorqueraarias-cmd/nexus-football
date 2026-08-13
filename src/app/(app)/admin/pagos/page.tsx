@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createPaymentAction, deletePaymentAction } from "@/lib/actions/payments";
 import { PaymentStatusSelect } from "@/components/admin/payment-status-select";
+import { PaymentDueDateInput } from "@/components/admin/payment-due-date-input";
+import { PlayerScholarshipToggle } from "@/components/admin/player-scholarship-toggle";
 import { DeleteButton } from "@/components/admin/delete-button";
 
 export default async function AdminPagosPage() {
@@ -9,9 +11,13 @@ export default async function AdminPagosPage() {
   const [{ data: payments }, { data: players }] = await Promise.all([
     supabase
       .from("payments")
-      .select("id, period, amount, method, status, player:players(full_name)")
+      .select("id, period, amount, method, status, due_date, player:players(full_name, is_scholarship)")
       .order("period", { ascending: false }),
-    supabase.from("players").select("id, full_name").order("full_name"),
+    supabase
+      .from("players")
+      .select("id, full_name, is_scholarship")
+      .eq("status", "activo")
+      .order("full_name"),
   ]);
 
   async function action(formData: FormData) {
@@ -29,7 +35,18 @@ export default async function AdminPagosPage() {
         Registro manual de pagos por transferencia o efectivo.
       </p>
 
-      <form action={action} className="mt-8 flex flex-wrap items-end gap-3 rounded-xl border border-ink-900/10 p-4">
+      <div className="mt-8 rounded-xl border border-ink-900/10 p-4">
+        <h2 className="font-display mb-3 text-sm font-bold uppercase tracking-wide text-ink-900/70">
+          Alumnos becados
+        </h2>
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
+          {(players ?? []).map((p) => (
+            <PlayerScholarshipToggle key={p.id} playerId={p.id} isScholarship={p.is_scholarship} />
+          ))}
+        </div>
+      </div>
+
+      <form action={action} className="mt-6 flex flex-wrap items-end gap-3 rounded-xl border border-ink-900/10 p-4">
         <div className="flex flex-col gap-1">
           <label htmlFor="player_id" className="text-xs font-semibold uppercase text-ink-900/60">
             Alumno
@@ -54,6 +71,13 @@ export default async function AdminPagosPage() {
             Monto
           </label>
           <input id="amount" name="amount" type="number" min="0" step="1" required className="w-28 rounded-md border border-ink-900/15 px-3 py-2 text-sm" />
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label htmlFor="due_date" className="text-xs font-semibold uppercase text-ink-900/60">
+            Fecha de pago
+          </label>
+          <input id="due_date" name="due_date" type="date" className="rounded-md border border-ink-900/15 px-3 py-2 text-sm" />
         </div>
 
         <div className="flex flex-col gap-1">
@@ -91,6 +115,7 @@ export default async function AdminPagosPage() {
               <th className="px-4 py-3">Alumno</th>
               <th className="px-4 py-3">Período</th>
               <th className="px-4 py-3">Monto</th>
+              <th className="px-4 py-3">Fecha de pago</th>
               <th className="px-4 py-3">Método</th>
               <th className="px-4 py-3">Estado</th>
               <th className="px-4 py-3" />
@@ -98,12 +123,22 @@ export default async function AdminPagosPage() {
           </thead>
           <tbody>
             {(payments ?? []).map((p) => {
-              const player = p.player as { full_name: string } | null;
+              const player = p.player as { full_name: string; is_scholarship: boolean } | null;
               return (
                 <tr key={p.id} className="border-t border-ink-900/5">
-                  <td className="px-4 py-3 font-semibold text-ink-900">{player?.full_name}</td>
+                  <td className="px-4 py-3 font-semibold text-ink-900">
+                    {player?.full_name}
+                    {player?.is_scholarship && (
+                      <span className="ml-2 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-bold text-brand-700">
+                        Becado
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">{p.period}</td>
                   <td className="px-4 py-3">${Number(p.amount).toLocaleString("es-CL")}</td>
+                  <td className="px-4 py-3">
+                    <PaymentDueDateInput paymentId={p.id} dueDate={p.due_date} />
+                  </td>
                   <td className="px-4 py-3 capitalize">{p.method}</td>
                   <td className="px-4 py-3">
                     <PaymentStatusSelect paymentId={p.id} status={p.status} />

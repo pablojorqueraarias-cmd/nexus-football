@@ -82,6 +82,12 @@ export type SiteContent = {
   cta_description: string;
   footer_description: string;
   location: string;
+  bank_name: string | null;
+  bank_account_type: string | null;
+  bank_account_number: string | null;
+  bank_account_holder: string | null;
+  bank_account_rut: string | null;
+  bank_transfer_email: string | null;
 };
 
 const FALLBACK_SITE_CONTENT: SiteContent = {
@@ -93,6 +99,12 @@ const FALLBACK_SITE_CONTENT: SiteContent = {
   footer_description:
     "Academia de fútbol formativo en Chile, con categorías desde Iniciación hasta Proyección.",
   location: "Chile",
+  bank_name: null,
+  bank_account_type: null,
+  bank_account_number: null,
+  bank_account_holder: null,
+  bank_account_rut: null,
+  bank_transfer_email: null,
 };
 
 export async function getSiteContent(): Promise<SiteContent> {
@@ -100,7 +112,9 @@ export async function getSiteContent(): Promise<SiteContent> {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("site_content")
-      .select("hero_eyebrow, hero_description, cta_description, footer_description, location")
+      .select(
+        "hero_eyebrow, hero_description, cta_description, footer_description, location, bank_name, bank_account_type, bank_account_number, bank_account_holder, bank_account_rut, bank_transfer_email"
+      )
       .eq("id", 1)
       .maybeSingle();
 

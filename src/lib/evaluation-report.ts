@@ -1,6 +1,7 @@
 export interface EvaluationItemDetail {
   label: string;
-  meets: boolean;
+  score: number;
+  comment: string | null;
 }
 
 export const PHASE_LABELS: Record<string, string> = {
@@ -12,18 +13,28 @@ export const PHASE_LABELS: Record<string, string> = {
 export const PHASE_ORDER = ["general", "defensiva", "ofensiva"];
 
 export function groupEvaluationByPhase(
-  items: { meets: boolean | null; checklist_criteria: { label: string; phase: string } | null }[]
+  items: {
+    score: number | null;
+    comment?: string | null;
+    checklist_criteria: { label: string; phase: string } | null;
+  }[]
 ) {
-  const clean = items.filter((item) => item.meets !== null && item.checklist_criteria);
+  const clean = items.filter((item) => item.score !== null && item.checklist_criteria);
 
   const byPhase = new Map<string, EvaluationItemDetail[]>();
   for (const item of clean) {
     const phase = item.checklist_criteria!.phase;
     if (!byPhase.has(phase)) byPhase.set(phase, []);
-    byPhase.get(phase)!.push({ label: item.checklist_criteria!.label, meets: item.meets! });
+    byPhase.get(phase)!.push({
+      label: item.checklist_criteria!.label,
+      score: item.score!,
+      comment: item.comment ?? null,
+    });
   }
 
-  const totalMet = clean.filter((i) => i.meets).length;
+  const totalItems = clean.length;
+  const averageScore =
+    totalItems > 0 ? clean.reduce((sum, i) => sum + (i.score ?? 0), 0) / totalItems : 0;
 
-  return { byPhase, totalItems: clean.length, totalMet };
+  return { byPhase, totalItems, averageScore };
 }

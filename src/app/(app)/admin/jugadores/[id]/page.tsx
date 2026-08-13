@@ -42,7 +42,7 @@ export default async function AdminJugadorDetallePage({
       supabase.from("positions").select("id, name").order("display_order"),
       supabase
         .from("evaluations")
-        .select("*, evaluator:profiles(full_name), evaluation_items(meets, checklist_criteria(label, phase))")
+        .select("*, evaluator:profiles(full_name), evaluation_items(score, comment, checklist_criteria(label, phase))")
         .eq("player_id", id)
         .order("created_at", { ascending: false }),
       supabase.from("player_stats_summary").select("*").eq("player_id", id).maybeSingle(),
@@ -101,10 +101,13 @@ export default async function AdminJugadorDetallePage({
 
         <div className="rounded-xl border border-ink-900/10 p-4">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-900/50">
-            Minutos · Goles · Asistencias
+            Partidos jugados
           </h2>
           <p className="font-display mt-2 text-2xl font-bold text-ink-900">
-            {stats?.total_minutes ?? 0}′ · {stats?.total_goals ?? 0} · {stats?.total_assists ?? 0}
+            {stats?.matches_played ?? 0}
+          </p>
+          <p className="mt-1 text-xs text-ink-900/50">
+            {stats?.total_minutes ?? 0}′ · {stats?.total_goals ?? 0} goles · {stats?.total_assists ?? 0} asistencias
           </p>
         </div>
       </div>
@@ -199,13 +202,15 @@ export default async function AdminJugadorDetallePage({
         {history.length > 0 && (
           <ul className="mt-4 flex flex-col gap-2">
             {history.map((ev) => {
-              const { totalItems, totalMet } = groupEvaluationByPhase(ev.evaluation_items);
+              const { totalItems, averageScore } = groupEvaluationByPhase(ev.evaluation_items);
               return (
                 <li key={ev.id} className="flex items-center justify-between gap-3 rounded-lg border border-ink-900/10 px-4 py-2 text-sm">
                   <span className="text-ink-900/70">
                     {new Date(ev.created_at).toLocaleDateString("es-CL")} ·{" "}
                     {(ev.evaluator as { full_name: string } | null)?.full_name ?? "Admin"} ·{" "}
-                    <span className="font-semibold text-ink-900">{totalMet}/{totalItems}</span>
+                    <span className="font-semibold text-ink-900">
+                      {totalItems > 0 ? `${averageScore.toFixed(1)}/10` : "—"}
+                    </span>
                   </span>
                   <div className="flex items-center gap-3">
                     <Link

@@ -37,7 +37,7 @@ export default async function JugadorEstadisticasPage({
         Estadísticas
       </h1>
       <p className="mt-1 text-ink-900/60">
-        Total: {totalMinutes}′ jugados · {totalGoals} goles · {totalAssists} asistencias
+        Total: {sorted.length} partidos · {totalMinutes}′ jugados · {totalGoals} goles · {totalAssists} asistencias
       </p>
 
       {sorted.length === 0 ? (

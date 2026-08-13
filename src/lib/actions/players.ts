@@ -91,6 +91,18 @@ export async function deletePlayerAction(playerId: string) {
   revalidatePath("/admin/jugadores");
 }
 
+export async function setPlayerScholarshipAction(playerId: string, isScholarship: boolean) {
+  await assertAdmin();
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("players")
+    .update({ is_scholarship: isScholarship })
+    .eq("id", playerId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/pagos");
+  revalidatePath("/admin/jugadores");
+}
+
 export async function setPlayerPositionAction(playerId: string, positionId: string | null) {
   await assertAdmin();
   const supabase = await createClient();

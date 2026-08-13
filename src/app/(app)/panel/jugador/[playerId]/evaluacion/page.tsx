@@ -18,7 +18,7 @@ export default async function JugadorEvaluacionPage({
 
   const { data: evaluations } = await supabase
     .from("evaluations")
-    .select("*, evaluator:profiles(full_name), evaluation_items(meets, checklist_criteria(label, phase))")
+    .select("*, evaluator:profiles(full_name), evaluation_items(score, comment, checklist_criteria(label, phase))")
     .eq("player_id", playerId)
     .order("created_at", { ascending: false });
 
@@ -62,12 +62,14 @@ export default async function JugadorEvaluacionPage({
           </h2>
           <ul className="mt-3 flex flex-col gap-2">
             {history.map((ev) => {
-              const { totalItems, totalMet } = groupEvaluationByPhase(ev.evaluation_items);
+              const { totalItems, averageScore } = groupEvaluationByPhase(ev.evaluation_items);
               return (
                 <li key={ev.id} className="flex items-center justify-between gap-3 rounded-lg border border-ink-900/10 px-4 py-2 text-sm">
                   <span className="text-ink-900/70">
                     {new Date(ev.created_at).toLocaleDateString("es-CL")} ·{" "}
-                    <span className="font-semibold text-ink-900">{totalMet}/{totalItems}</span>
+                    <span className="font-semibold text-ink-900">
+                      {totalItems > 0 ? `${averageScore.toFixed(1)}/10` : "—"}
+                    </span>
                   </span>
                   <Link
                     href={`/panel/jugador/${playerId}/evaluacion/${ev.id}`}

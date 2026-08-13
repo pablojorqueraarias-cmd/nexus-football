@@ -41,12 +41,15 @@ export async function createEvaluationAction(playerId: string, formData: FormDat
 
   const items = criterionIds
     .map((criterionId) => {
-      const raw = formData.get(`meets_${criterionId}`);
-      if (raw !== "si" && raw !== "no") return null;
+      const raw = formData.get(`score_${criterionId}`);
+      const score = Number(raw);
+      if (!raw || !Number.isInteger(score) || score < 1 || score > 10) return null;
+      const comment = (formData.get(`comment_${criterionId}`) as string)?.trim() || null;
       return {
         evaluation_id: evaluationId,
         criterion_id: criterionId,
-        meets: raw === "si",
+        score,
+        comment,
       };
     })
     .filter((item): item is NonNullable<typeof item> => item !== null);

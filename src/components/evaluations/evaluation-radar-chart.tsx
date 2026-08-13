@@ -1,6 +1,12 @@
 interface RadarItem {
   label: string;
-  meets: boolean;
+  score: number;
+}
+
+function pointColor(score: number) {
+  if (score >= 8) return "#16a34a";
+  if (score >= 5) return "#d97706";
+  return "#dc2626";
 }
 
 export function EvaluationRadarChart({ items, size = 220 }: { items: RadarItem[]; size?: number }) {
@@ -19,7 +25,7 @@ export function EvaluationRadarChart({ items, size = 220 }: { items: RadarItem[]
     };
   }
 
-  const dataPoints = items.map((item, i) => pointAt(i, item.meets ? 1 : 0));
+  const dataPoints = items.map((item, i) => pointAt(i, item.score / 10));
   const dataPath = dataPoints.map((p) => `${p.x},${p.y}`).join(" ");
   const outerPoints = items.map((_, i) => pointAt(i, 1));
 
@@ -46,13 +52,7 @@ export function EvaluationRadarChart({ items, size = 220 }: { items: RadarItem[]
 
       {/* puntos por criterio */}
       {dataPoints.map((p, i) => (
-        <circle
-          key={i}
-          cx={p.x}
-          cy={p.y}
-          r={4}
-          fill={items[i].meets ? "#16a34a" : "#a1a1aa"}
-        />
+        <circle key={i} cx={p.x} cy={p.y} r={4} fill={pointColor(items[i].score)} />
       ))}
 
       {/* números de eje */}
