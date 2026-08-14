@@ -18,45 +18,31 @@ const PHASE_LABELS: Record<keyof ChecklistGroups, string> = {
   ofensiva: "Fase Ofensiva",
 };
 
-const SCORES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-
-function scoreColor(score: number) {
-  if (score >= 8) return "has-[input:checked]:bg-green-600";
-  if (score >= 5) return "has-[input:checked]:bg-amber-500";
-  return "has-[input:checked]:bg-red-600";
-}
-
 function CriterionRow({ criterion }: { criterion: Criterion }) {
   return (
-    <div className="flex flex-col gap-2 border-b border-ink-900/5 py-3 last:border-none">
-      <div>
+    <div className="flex flex-col gap-2 border-b border-ink-900/5 py-3 last:border-none sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+      <div className="flex-1">
         <p className="text-sm text-ink-900">{criterion.label}</p>
         {criterion.description && (
           <p className="mt-0.5 text-xs text-ink-900/40">{criterion.description}</p>
         )}
+        <input
+          type="text"
+          name={`comment_${criterion.id}`}
+          placeholder="Comentario (opcional)"
+          className="mt-1.5 w-full rounded-md border border-ink-900/15 px-3 py-1.5 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 sm:max-w-xs"
+        />
       </div>
-      <div className="flex flex-wrap items-center gap-1 rounded-md border border-ink-900/15 p-0.5">
-        {SCORES.map((score) => (
-          <label
-            key={score}
-            className={`flex h-9 w-9 cursor-pointer items-center justify-center rounded text-sm font-semibold text-ink-900/50 has-[input:checked]:text-white ${scoreColor(score)}`}
-          >
-            <input
-              type="radio"
-              name={`score_${criterion.id}`}
-              value={score}
-              className="sr-only"
-            />
-            {score}
-          </label>
-        ))}
+      <div className="flex shrink-0 items-center gap-1 rounded-md border border-ink-900/15 p-0.5">
+        <label className="flex h-11 flex-1 cursor-pointer items-center justify-center rounded px-3 text-xs font-semibold text-ink-900/50 has-[input:checked]:bg-green-600 has-[input:checked]:text-white sm:h-9 sm:flex-none">
+          <input type="radio" name={`highlight_${criterion.id}`} value="destacar" className="sr-only" />
+          A destacar
+        </label>
+        <label className="flex h-11 flex-1 cursor-pointer items-center justify-center rounded px-3 text-xs font-semibold text-ink-900/50 has-[input:checked]:bg-amber-600 has-[input:checked]:text-white sm:h-9 sm:flex-none">
+          <input type="radio" name={`highlight_${criterion.id}`} value="corregir" className="sr-only" />
+          A corregir
+        </label>
       </div>
-      <input
-        type="text"
-        name={`comment_${criterion.id}`}
-        placeholder="Comentario para detallar la nota (opcional)"
-        className="rounded-md border border-ink-900/15 px-3 py-1.5 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
-      />
     </div>
   );
 }

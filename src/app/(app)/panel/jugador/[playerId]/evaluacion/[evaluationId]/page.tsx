@@ -16,7 +16,7 @@ export default async function JugadorEvaluacionDetallePage({
     supabase.from("players").select("full_name").eq("id", playerId).single(),
     supabase
       .from("evaluations")
-      .select("*, evaluator:profiles(full_name), evaluation_items(score, comment, checklist_criteria(label, phase))")
+      .select("*, evaluator:profiles(full_name), evaluation_items(highlight, comment, checklist_criteria(label, phase))")
       .eq("id", evaluationId)
       .single(),
   ]);

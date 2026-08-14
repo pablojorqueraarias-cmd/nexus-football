@@ -4,12 +4,29 @@ import { deletePlayerAction } from "@/lib/actions/players";
 import { PlayerStatusSelect } from "@/components/admin/player-status-select";
 import { DeleteButton } from "@/components/admin/delete-button";
 
-export default async function AdminJugadoresPage() {
+export default async function AdminJugadoresPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; category?: string }>;
+}) {
+  const { q, category } = await searchParams;
   const supabase = await createClient();
-  const { data: players } = await supabase
+
+  const { data: categories } = await supabase
+    .from("categories")
+    .select("id, name")
+    .neq("name", "General")
+    .order("display_order");
+
+  let query = supabase
     .from("players")
     .select("id, full_name, status, birth_date, category:categories(name), parent:profiles(full_name, id)")
     .order("full_name");
+
+  if (q) query = query.ilike("full_name", `%${q}%`);
+  if (category) query = query.eq("category_id", category);
+
+  const { data: players } = await query;
 
   return (
     <div>
@@ -28,7 +45,52 @@ export default async function AdminJugadoresPage() {
         </Link>
       </div>
 
-      <div className="mt-8 overflow-x-auto rounded-xl border border-ink-900/10">
+      <form method="get" className="mt-6 flex flex-wrap items-end gap-3 rounded-xl border border-ink-900/10 p-4">
+        <div className="flex flex-1 flex-col gap-1">
+          <label htmlFor="q" className="text-xs font-semibold uppercase text-ink-900/60">
+            Buscar por nombre
+          </label>
+          <input
+            id="q"
+            name="q"
+            defaultValue={q}
+            placeholder="Nombre del jugador/a"
+            className="rounded-md border border-ink-900/15 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label htmlFor="category" className="text-xs font-semibold uppercase text-ink-900/60">
+            Categoría
+          </label>
+          <select
+            id="category"
+            name="category"
+            defaultValue={category ?? ""}
+            className="rounded-md border border-ink-900/15 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+          >
+            <option value="">Todas</option>
+            {categories?.map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+        <button
+          type="submit"
+          className="rounded-md border border-ink-900/15 px-4 py-2 text-sm font-semibold text-ink-900 hover:bg-zinc-100"
+        >
+          Buscar
+        </button>
+        {(q || category) && (
+          <Link
+            href="/admin/jugadores"
+            className="text-xs font-semibold uppercase tracking-wide text-ink-900/40 hover:text-brand-500"
+          >
+            Limpiar
+          </Link>
+        )}
+      </form>
+
+      <div className="mt-6 overflow-x-auto rounded-xl border border-ink-900/10">
         <table className="w-full text-left text-sm">
           <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-ink-900/50">
             <tr>
@@ -41,7 +103,7 @@ export default async function AdminJugadoresPage() {
           </thead>
           <tbody>
             {(players ?? []).map((p) => {
-              const category = p.category as { name: string } | null;
+              const cat = p.category as { name: string } | null;
               const parent = p.parent as { full_name: string; id: string } | null;
               return (
                 <tr key={p.id} className="border-t border-ink-900/5">
@@ -50,7 +112,7 @@ export default async function AdminJugadoresPage() {
                       {p.full_name}
                     </Link>
                   </td>
-                  <td className="px-4 py-3">{category?.name ?? "—"}</td>
+                  <td className="px-4 py-3">{cat?.name ?? "—"}</td>
                   <td className="px-4 py-3">{parent?.full_name ?? "Sin asignar"}</td>
                   <td className="px-4 py-3">
                     <PlayerStatusSelect playerId={p.id} status={p.status} />
@@ -72,6 +134,13 @@ export default async function AdminJugadoresPage() {
                 </tr>
               );
             })}
+            {(players ?? []).length === 0 && (
+              <tr>
+                <td colSpan={5} className="px-4 py-8 text-center text-ink-900/50">
+                  No hay jugadores/as que coincidan con la búsqueda.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

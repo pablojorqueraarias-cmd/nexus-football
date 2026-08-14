@@ -1,6 +1,6 @@
 export interface EvaluationItemDetail {
   label: string;
-  score: number;
+  highlight: boolean;
   comment: string | null;
 }
 
@@ -14,12 +14,12 @@ export const PHASE_ORDER = ["general", "defensiva", "ofensiva"];
 
 export function groupEvaluationByPhase(
   items: {
-    score: number | null;
+    highlight: boolean | null;
     comment?: string | null;
     checklist_criteria: { label: string; phase: string } | null;
   }[]
 ) {
-  const clean = items.filter((item) => item.score !== null && item.checklist_criteria);
+  const clean = items.filter((item) => item.highlight !== null && item.checklist_criteria);
 
   const byPhase = new Map<string, EvaluationItemDetail[]>();
   for (const item of clean) {
@@ -27,14 +27,13 @@ export function groupEvaluationByPhase(
     if (!byPhase.has(phase)) byPhase.set(phase, []);
     byPhase.get(phase)!.push({
       label: item.checklist_criteria!.label,
-      score: item.score!,
+      highlight: item.highlight!,
       comment: item.comment ?? null,
     });
   }
 
   const totalItems = clean.length;
-  const averageScore =
-    totalItems > 0 ? clean.reduce((sum, i) => sum + (i.score ?? 0), 0) / totalItems : 0;
+  const totalHighlighted = clean.filter((i) => i.highlight).length;
 
-  return { byPhase, totalItems, averageScore };
+  return { byPhase, totalItems, totalHighlighted };
 }

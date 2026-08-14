@@ -45,7 +45,7 @@ export default async function AdminJugadorDetallePage({
       supabase.from("positions").select("id, name").order("display_order"),
       supabase
         .from("evaluations")
-        .select("*, evaluator:profiles(full_name), evaluation_items(score, comment, checklist_criteria(label, phase))")
+        .select("*, evaluator:profiles(full_name), evaluation_items(highlight, comment, checklist_criteria(label, phase))")
         .eq("player_id", id)
         .order("created_at", { ascending: false }),
       supabase.from("player_stats_summary").select("*").eq("player_id", id).maybeSingle(),
@@ -206,14 +206,14 @@ export default async function AdminJugadorDetallePage({
         {history.length > 0 && (
           <ul className="mt-4 flex flex-col gap-2">
             {history.map((ev) => {
-              const { totalItems, averageScore } = groupEvaluationByPhase(ev.evaluation_items);
+              const { totalItems, totalHighlighted } = groupEvaluationByPhase(ev.evaluation_items);
               return (
                 <li key={ev.id} className="flex items-center justify-between gap-3 rounded-lg border border-ink-900/10 px-4 py-2 text-sm">
                   <span className="text-ink-900/70">
                     {new Date(ev.created_at).toLocaleDateString("es-CL")} ·{" "}
                     {(ev.evaluator as { full_name: string } | null)?.full_name ?? "Admin"} ·{" "}
                     <span className="font-semibold text-ink-900">
-                      {totalItems > 0 ? `${averageScore.toFixed(1)}/10` : "—"}
+                      {totalItems > 0 ? `${totalHighlighted}/${totalItems} a destacar` : "—"}
                     </span>
                   </span>
                   <div className="flex items-center gap-3">

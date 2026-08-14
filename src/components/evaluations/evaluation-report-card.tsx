@@ -9,17 +9,11 @@ interface EvaluationReportCardProps {
   conclusion: string | null;
   matchContext: string | null;
   items: {
-    score: number | null;
+    highlight: boolean | null;
     comment?: string | null;
     checklist_criteria: { label: string; phase: string } | null;
   }[];
   actions?: React.ReactNode;
-}
-
-function scoreTextColor(score: number) {
-  if (score >= 8) return "text-green-700";
-  if (score >= 5) return "text-amber-700";
-  return "text-red-700";
 }
 
 export function EvaluationReportCard({
@@ -32,7 +26,7 @@ export function EvaluationReportCard({
   items,
   actions,
 }: EvaluationReportCardProps) {
-  const { byPhase, totalItems, averageScore } = groupEvaluationByPhase(items);
+  const { byPhase, totalItems, totalHighlighted } = groupEvaluationByPhase(items);
 
   return (
     <div className="rounded-xl border border-ink-900/10 p-6">
@@ -45,7 +39,7 @@ export function EvaluationReportCard({
         </h2>
         <div className="flex items-center gap-2">
           <span className="rounded-full bg-brand-50 px-3 py-1 text-sm font-bold text-brand-700">
-            {totalItems > 0 ? `${averageScore.toFixed(1)}/10 promedio` : "Sin ítems"}
+            {totalItems > 0 ? `${totalHighlighted}/${totalItems} a destacar` : "Sin ítems"}
           </span>
           {actions}
         </div>
@@ -75,13 +69,15 @@ export function EvaluationReportCard({
       <div className="flex flex-col gap-6">
         {PHASE_ORDER.filter((phase) => byPhase.has(phase)).map((phase) => {
           const phaseItems = byPhase.get(phase)!;
-          const phaseAvg = phaseItems.reduce((sum, i) => sum + i.score, 0) / phaseItems.length;
+          const phaseHighlighted = phaseItems.filter((i) => i.highlight).length;
           return (
             <div key={phase} className="flex flex-col gap-3 sm:flex-row sm:items-start">
               <div className="flex flex-1 flex-col gap-2">
                 <h3 className="text-sm font-semibold text-ink-900">
                   {PHASE_LABELS[phase] ?? phase}{" "}
-                  <span className="text-brand-600">{phaseAvg.toFixed(1)}/10</span>
+                  <span className="text-brand-600">
+                    {phaseHighlighted}/{phaseItems.length}
+                  </span>
                 </h3>
                 <ul className="flex flex-col gap-2">
                   {phaseItems.map((item, idx) => (
@@ -90,8 +86,12 @@ export function EvaluationReportCard({
                         <span className="text-ink-900/70">
                           {idx + 1}. {item.label}
                         </span>
-                        <span className={`shrink-0 font-bold ${scoreTextColor(item.score)}`}>
-                          {item.score}/10
+                        <span
+                          className={`shrink-0 font-bold ${
+                            item.highlight ? "text-green-700" : "text-amber-700"
+                          }`}
+                        >
+                          {item.highlight ? "A destacar" : "A corregir"}
                         </span>
                       </div>
                       {item.comment && (

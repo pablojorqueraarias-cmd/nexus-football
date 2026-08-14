@@ -458,14 +458,14 @@ export interface Database {
           id: string;
           evaluation_id: string;
           criterion_id: string;
-          score: number;
+          highlight: boolean;
           comment: string | null;
         };
         Insert: {
           id?: string;
           evaluation_id: string;
           criterion_id: string;
-          score: number;
+          highlight: boolean;
           comment?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["evaluation_items"]["Insert"]>;
