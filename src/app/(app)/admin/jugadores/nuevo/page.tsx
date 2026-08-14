@@ -80,7 +80,8 @@ export default async function NuevoJugadorPage() {
           </select>
           <p className="text-xs text-ink-900/40">
             Solo aparecen apoderados que ya tienen cuenta (creada desde
-            Usuarios o al aprobar una inscripción).
+            Usuarios). Si todavía no la tiene, podés dejarlo sin asignar y
+            vincularlo después desde la ficha del alumno.
           </p>
         </div>
 

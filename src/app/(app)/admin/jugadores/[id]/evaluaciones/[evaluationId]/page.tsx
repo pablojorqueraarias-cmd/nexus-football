@@ -16,7 +16,7 @@ export default async function AdminEvaluationReportPage({
     supabase.from("players").select("full_name").eq("id", id).single(),
     supabase
       .from("evaluations")
-      .select("*, evaluator:profiles(full_name), evaluation_items(highlight, comment, checklist_criteria(label, phase))")
+      .select("*, evaluator:profiles(full_name), evaluation_items(level, comment, checklist_criteria(label, phase))")
       .eq("id", evaluationId)
       .single(),
   ]);

@@ -103,6 +103,18 @@ export async function setPlayerScholarshipAction(playerId: string, isScholarship
   revalidatePath("/admin/jugadores");
 }
 
+export async function setPlayerParentAction(playerId: string, parentId: string | null) {
+  await assertAdmin();
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("players")
+    .update({ parent_id: parentId })
+    .eq("id", playerId);
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/jugadores/${playerId}`);
+  revalidatePath("/admin/jugadores");
+}
+
 export async function setPlayerPositionAction(playerId: string, positionId: string | null) {
   await assertAdmin();
   const supabase = await createClient();

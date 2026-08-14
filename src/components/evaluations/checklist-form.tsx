@@ -1,5 +1,7 @@
 "use client";
 
+import { EVALUATION_LEVELS } from "@/lib/evaluation-levels";
+
 export interface Criterion {
   id: string;
   label: string;
@@ -18,31 +20,45 @@ const PHASE_LABELS: Record<keyof ChecklistGroups, string> = {
   ofensiva: "Fase Ofensiva",
 };
 
+function levelColor(value: number) {
+  if (value >= 4) return "has-[input:checked]:bg-green-600";
+  if (value === 3) return "has-[input:checked]:bg-brand-500";
+  return "has-[input:checked]:bg-amber-600";
+}
+
 function CriterionRow({ criterion }: { criterion: Criterion }) {
   return (
-    <div className="flex flex-col gap-2 border-b border-ink-900/5 py-3 last:border-none sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-      <div className="flex-1">
+    <div className="flex flex-col gap-2 border-b border-ink-900/5 py-3 last:border-none">
+      <div>
         <p className="text-sm text-ink-900">{criterion.label}</p>
         {criterion.description && (
           <p className="mt-0.5 text-xs text-ink-900/40">{criterion.description}</p>
         )}
-        <input
-          type="text"
-          name={`comment_${criterion.id}`}
-          placeholder="Comentario (opcional)"
-          className="mt-1.5 w-full rounded-md border border-ink-900/15 px-3 py-1.5 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 sm:max-w-xs"
-        />
       </div>
-      <div className="flex shrink-0 items-center gap-1 rounded-md border border-ink-900/15 p-0.5">
-        <label className="flex h-11 flex-1 cursor-pointer items-center justify-center rounded px-3 text-xs font-semibold text-ink-900/50 has-[input:checked]:bg-green-600 has-[input:checked]:text-white sm:h-9 sm:flex-none">
-          <input type="radio" name={`highlight_${criterion.id}`} value="destacar" className="sr-only" />
-          A destacar
-        </label>
-        <label className="flex h-11 flex-1 cursor-pointer items-center justify-center rounded px-3 text-xs font-semibold text-ink-900/50 has-[input:checked]:bg-amber-600 has-[input:checked]:text-white sm:h-9 sm:flex-none">
-          <input type="radio" name={`highlight_${criterion.id}`} value="corregir" className="sr-only" />
-          A corregir
-        </label>
+      <div className="flex flex-wrap items-center gap-1 rounded-md border border-ink-900/15 p-0.5">
+        {EVALUATION_LEVELS.map((level) => (
+          <label
+            key={level.value}
+            title={level.label}
+            className={`flex h-11 flex-1 cursor-pointer flex-col items-center justify-center rounded text-xs font-semibold text-ink-900/50 has-[input:checked]:text-white sm:h-12 ${levelColor(level.value)}`}
+          >
+            <input
+              type="radio"
+              name={`level_${criterion.id}`}
+              value={level.value}
+              className="sr-only"
+            />
+            <span className="text-sm font-bold">{level.value}</span>
+            <span className="hidden text-[10px] font-medium sm:block">{level.label}</span>
+          </label>
+        ))}
       </div>
+      <input
+        type="text"
+        name={`comment_${criterion.id}`}
+        placeholder="Comentario (opcional)"
+        className="rounded-md border border-ink-900/15 px-3 py-1.5 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+      />
     </div>
   );
 }

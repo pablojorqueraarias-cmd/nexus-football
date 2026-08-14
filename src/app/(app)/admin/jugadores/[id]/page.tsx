@@ -6,6 +6,7 @@ import { deleteEvaluationAction } from "@/lib/actions/evaluations";
 import { deleteDocumentAction } from "@/lib/actions/documents";
 import { invitePlayerAction } from "@/lib/actions/players";
 import { PlayerPositionSelect } from "@/components/admin/player-position-select";
+import { PlayerParentSelect } from "@/components/admin/player-parent-select";
 import { DocumentUploadForm } from "@/components/admin/document-upload-form";
 import { DocumentDownloadButton } from "@/components/document-download-button";
 import { DeleteButton } from "@/components/admin/delete-button";
@@ -33,19 +34,20 @@ export default async function AdminJugadorDetallePage({
   const { data: player } = await supabase
     .from("players")
     .select(
-      "id, full_name, status, birth_date, position_id, user_id, category:categories(name), parent:profiles!players_parent_id_fkey(full_name)"
+      "id, full_name, status, birth_date, position_id, parent_id, user_id, category:categories(name), parent:profiles!players_parent_id_fkey(full_name)"
     )
     .eq("id", id)
     .single();
 
   if (!player) notFound();
 
-  const [{ data: positions }, { data: evaluations }, { data: stats }, { data: documents }, media] =
+  const [{ data: positions }, { data: parents }, { data: evaluations }, { data: stats }, { data: documents }, media] =
     await Promise.all([
       supabase.from("positions").select("id, name").order("display_order"),
+      supabase.from("profiles").select("id, full_name").eq("role", "parent").order("full_name"),
       supabase
         .from("evaluations")
-        .select("*, evaluator:profiles(full_name), evaluation_items(highlight, comment, checklist_criteria(label, phase))")
+        .select("*, evaluator:profiles(full_name), evaluation_items(level, comment, checklist_criteria(label, phase))")
         .eq("player_id", id)
         .order("created_at", { ascending: false }),
       supabase.from("player_stats_summary").select("*").eq("player_id", id).maybeSingle(),
@@ -88,11 +90,18 @@ export default async function AdminJugadorDetallePage({
         </Link>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-ink-900/10 p-4">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-900/50">Posición</h2>
           <div className="mt-2">
             <PlayerPositionSelect playerId={id} positionId={player.position_id} positions={positions ?? []} />
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-ink-900/10 p-4">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-900/50">Apoderado</h2>
+          <div className="mt-2">
+            <PlayerParentSelect playerId={id} parentId={player.parent_id} parents={parents ?? []} />
           </div>
         </div>
 
@@ -206,14 +215,14 @@ export default async function AdminJugadorDetallePage({
         {history.length > 0 && (
           <ul className="mt-4 flex flex-col gap-2">
             {history.map((ev) => {
-              const { totalItems, totalHighlighted } = groupEvaluationByPhase(ev.evaluation_items);
+              const { totalItems, averageLevel } = groupEvaluationByPhase(ev.evaluation_items);
               return (
                 <li key={ev.id} className="flex items-center justify-between gap-3 rounded-lg border border-ink-900/10 px-4 py-2 text-sm">
                   <span className="text-ink-900/70">
                     {new Date(ev.created_at).toLocaleDateString("es-CL")} ·{" "}
                     {(ev.evaluator as { full_name: string } | null)?.full_name ?? "Admin"} ·{" "}
                     <span className="font-semibold text-ink-900">
-                      {totalItems > 0 ? `${totalHighlighted}/${totalItems} a destacar` : "—"}
+                      {totalItems > 0 ? `${averageLevel.toFixed(1)}/5` : "—"}
                     </span>
                   </span>
                   <div className="flex items-center gap-3">

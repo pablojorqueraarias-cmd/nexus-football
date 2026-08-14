@@ -1,6 +1,12 @@
 interface RadarItem {
   label: string;
-  highlight: boolean;
+  level: number;
+}
+
+function pointColor(level: number) {
+  if (level >= 4) return "#16a34a";
+  if (level === 3) return "var(--color-brand-600)";
+  return "#d97706";
 }
 
 export function EvaluationRadarChart({ items, size = 220 }: { items: RadarItem[]; size?: number }) {
@@ -19,14 +25,14 @@ export function EvaluationRadarChart({ items, size = 220 }: { items: RadarItem[]
     };
   }
 
-  const dataPoints = items.map((item, i) => pointAt(i, item.highlight ? 1 : 0));
+  const dataPoints = items.map((item, i) => pointAt(i, item.level / 5));
   const dataPath = dataPoints.map((p) => `${p.x},${p.y}`).join(" ");
   const outerPoints = items.map((_, i) => pointAt(i, 1));
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0">
-      {/* anillos guía */}
-      {[0.25, 0.5, 0.75, 1].map((r) => (
+      {/* anillos guía: uno por cada nivel 1-5 */}
+      {[0.2, 0.4, 0.6, 0.8, 1].map((r) => (
         <polygon
           key={r}
           points={items.map((_, i) => { const p = pointAt(i, r); return `${p.x},${p.y}`; }).join(" ")}
@@ -46,13 +52,7 @@ export function EvaluationRadarChart({ items, size = 220 }: { items: RadarItem[]
 
       {/* puntos por criterio */}
       {dataPoints.map((p, i) => (
-        <circle
-          key={i}
-          cx={p.x}
-          cy={p.y}
-          r={4}
-          fill={items[i].highlight ? "#16a34a" : "#d97706"}
-        />
+        <circle key={i} cx={p.x} cy={p.y} r={4} fill={pointColor(items[i].level)} />
       ))}
 
       {/* números de eje */}

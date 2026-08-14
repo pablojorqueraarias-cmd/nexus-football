@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ChecklistForm, type ChecklistGroups } from "@/components/evaluations/checklist-form";
+import { EvaluationLevelLegend } from "@/components/evaluations/evaluation-level-legend";
 import { createEvaluationAction } from "@/lib/actions/evaluations";
 import type { CriterionPhase } from "@/types/database.types";
 
@@ -57,6 +58,8 @@ export default async function EvaluarJugadorPage({
           {positionInfo?.name ?? "Sin posición asignada"} · Checklist según perfil de posición
         </p>
       </div>
+
+      <EvaluationLevelLegend />
 
       <ChecklistForm groups={groups} hasPhases={hasPhases} action={action} />
     </div>
