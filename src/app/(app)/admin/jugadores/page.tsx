@@ -125,6 +125,12 @@ export default async function AdminJugadoresPage({
                       >
                         Ver ficha
                       </Link>
+                      <Link
+                        href={`/admin/jugadores/${p.id}/editar`}
+                        className="text-xs font-semibold uppercase tracking-wide text-ink-900/50 hover:text-brand-500"
+                      >
+                        Editar
+                      </Link>
                       <DeleteButton
                         action={deletePlayerAction.bind(null, p.id)}
                         confirmMessage={`¿Eliminar a ${p.full_name}? Esta acción no se puede deshacer.`}

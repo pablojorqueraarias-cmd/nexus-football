@@ -35,20 +35,34 @@ const playerSchema = z.object({
   parent_id: z.string().uuid().optional(),
   status: z.enum(["activo", "inactivo"]),
   notes: z.string().optional(),
+  rut: z.string().optional(),
+  clothing_size: z.string().optional(),
+  blood_type: z.string().optional(),
+  allergies: z.string().optional(),
+  chronic_conditions: z.string().optional(),
 });
 
-export async function createPlayerAction(formData: FormData) {
-  await assertAdmin();
-  const supabase = await createClient();
-
-  const parsed = playerSchema.parse({
+function parsePlayerForm(formData: FormData) {
+  return playerSchema.parse({
     full_name: formData.get("full_name"),
     birth_date: (formData.get("birth_date") as string) || undefined,
     category_id: (formData.get("category_id") as string) || undefined,
     parent_id: (formData.get("parent_id") as string) || undefined,
     status: (formData.get("status") as PlayerStatus) || "activo",
     notes: (formData.get("notes") as string) || undefined,
+    rut: (formData.get("rut") as string) || undefined,
+    clothing_size: (formData.get("clothing_size") as string) || undefined,
+    blood_type: (formData.get("blood_type") as string) || undefined,
+    allergies: (formData.get("allergies") as string) || undefined,
+    chronic_conditions: (formData.get("chronic_conditions") as string) || undefined,
   });
+}
+
+export async function createPlayerAction(formData: FormData) {
+  await assertAdmin();
+  const supabase = await createClient();
+
+  const parsed = parsePlayerForm(formData);
 
   const { error } = await supabase.from("players").insert(parsed);
   if (error) throw new Error(error.message);
@@ -60,19 +74,13 @@ export async function updatePlayerAction(playerId: string, formData: FormData) {
   await assertAdmin();
   const supabase = await createClient();
 
-  const parsed = playerSchema.parse({
-    full_name: formData.get("full_name"),
-    birth_date: (formData.get("birth_date") as string) || undefined,
-    category_id: (formData.get("category_id") as string) || undefined,
-    parent_id: (formData.get("parent_id") as string) || undefined,
-    status: (formData.get("status") as PlayerStatus) || "activo",
-    notes: (formData.get("notes") as string) || undefined,
-  });
+  const parsed = parsePlayerForm(formData);
 
   const { error } = await supabase.from("players").update(parsed).eq("id", playerId);
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/jugadores");
+  revalidatePath(`/admin/jugadores/${playerId}`);
 }
 
 export async function setPlayerStatusAction(playerId: string, status: PlayerStatus) {

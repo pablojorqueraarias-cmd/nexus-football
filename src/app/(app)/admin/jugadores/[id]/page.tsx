@@ -34,7 +34,7 @@ export default async function AdminJugadorDetallePage({
   const { data: player } = await supabase
     .from("players")
     .select(
-      "id, full_name, status, birth_date, position_id, parent_id, user_id, category:categories(name), parent:profiles!players_parent_id_fkey(full_name)"
+      "id, full_name, status, birth_date, position_id, parent_id, user_id, rut, clothing_size, blood_type, allergies, chronic_conditions, category:categories(name), parent:profiles!players_parent_id_fkey(full_name)"
     )
     .eq("id", id)
     .single();
@@ -82,12 +82,20 @@ export default async function AdminJugadorDetallePage({
             {category?.name ?? "Sin categoría"} · Apoderado: {parent?.full_name ?? "Sin asignar"}
           </p>
         </div>
-        <Link
-          href={`/admin/jugadores/${id}/evaluar`}
-          className="rounded-md bg-brand-500 px-4 py-2 text-sm font-bold uppercase tracking-wide text-white hover:bg-brand-600"
-        >
-          Nueva evaluación
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/admin/jugadores/${id}/editar`}
+            className="rounded-md border border-ink-900/15 px-4 py-2 text-sm font-bold uppercase tracking-wide text-ink-900 hover:bg-zinc-100"
+          >
+            Editar
+          </Link>
+          <Link
+            href={`/admin/jugadores/${id}/evaluar`}
+            className="rounded-md bg-brand-500 px-4 py-2 text-sm font-bold uppercase tracking-wide text-white hover:bg-brand-600"
+          >
+            Nueva evaluación
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -123,6 +131,58 @@ export default async function AdminJugadorDetallePage({
             {stats?.total_minutes ?? 0}′ · {stats?.total_goals ?? 0} goles · {stats?.total_assists ?? 0} asistencias
           </p>
         </div>
+      </div>
+
+      <div className="rounded-xl border border-ink-900/10 p-4">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="font-display text-sm font-bold uppercase tracking-wide text-ink-900/70">
+            Datos personales y médicos
+          </h2>
+          <Link
+            href={`/admin/jugadores/${id}/editar`}
+            className="text-xs font-semibold uppercase tracking-wide text-brand-500 hover:text-brand-600"
+          >
+            Editar
+          </Link>
+        </div>
+        {!player.rut && !player.clothing_size && !player.blood_type && !player.allergies && !player.chronic_conditions ? (
+          <p className="mt-2 text-sm text-ink-900/50">Sin datos cargados todavía.</p>
+        ) : (
+          <dl className="mt-3 grid gap-3 sm:grid-cols-2">
+            {player.rut && (
+              <div>
+                <dt className="text-xs font-semibold uppercase tracking-wide text-ink-900/40">RUT</dt>
+                <dd className="text-sm text-ink-900">{player.rut}</dd>
+              </div>
+            )}
+            {player.clothing_size && (
+              <div>
+                <dt className="text-xs font-semibold uppercase tracking-wide text-ink-900/40">Talla de ropa</dt>
+                <dd className="text-sm text-ink-900">{player.clothing_size}</dd>
+              </div>
+            )}
+            {player.blood_type && (
+              <div>
+                <dt className="text-xs font-semibold uppercase tracking-wide text-ink-900/40">Grupo sanguíneo</dt>
+                <dd className="text-sm text-ink-900">{player.blood_type}</dd>
+              </div>
+            )}
+            {player.allergies && (
+              <div className="sm:col-span-2">
+                <dt className="text-xs font-semibold uppercase tracking-wide text-ink-900/40">Alergias</dt>
+                <dd className="text-sm text-ink-900">{player.allergies}</dd>
+              </div>
+            )}
+            {player.chronic_conditions && (
+              <div className="sm:col-span-2">
+                <dt className="text-xs font-semibold uppercase tracking-wide text-ink-900/40">
+                  Enfermedades crónicas / condiciones médicas
+                </dt>
+                <dd className="text-sm text-ink-900">{player.chronic_conditions}</dd>
+              </div>
+            )}
+          </dl>
+        )}
       </div>
 
       <div className="rounded-xl border border-ink-900/10 p-4">

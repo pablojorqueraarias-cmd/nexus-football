@@ -115,6 +115,11 @@ export interface Database {
           is_scholarship: boolean;
           notes: string | null;
           photo_url: string | null;
+          rut: string | null;
+          clothing_size: string | null;
+          blood_type: string | null;
+          allergies: string | null;
+          chronic_conditions: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -130,6 +135,11 @@ export interface Database {
           is_scholarship?: boolean;
           notes?: string | null;
           photo_url?: string | null;
+          rut?: string | null;
+          clothing_size?: string | null;
+          blood_type?: string | null;
+          allergies?: string | null;
+          chronic_conditions?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["players"]["Insert"]>;
         Relationships: [
