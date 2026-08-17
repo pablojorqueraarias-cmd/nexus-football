@@ -49,7 +49,6 @@ export default async function JugadorEvaluacionDetallePage({
         matchContext={evaluation.match_context}
         items={evaluation.evaluation_items}
         previousItems={previous?.evaluation_items}
-        previousCreatedAt={previous?.created_at}
       />
     </div>
   );

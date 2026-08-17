@@ -255,7 +255,6 @@ export default async function AdminJugadorDetallePage({
               matchContext={latest.match_context}
               items={latest.evaluation_items}
               previousItems={history[0]?.evaluation_items}
-              previousCreatedAt={history[0]?.created_at}
               actions={
                 <>
                   <Link

@@ -14,6 +14,8 @@ export function EvaluationRadarChart({ items, size = 220 }: { items: RadarItem[]
   const n = items.length;
   if (n < 3) return null;
 
+  const hasPrevious = items.some((i) => typeof i.previousLevel === "number");
+
   const center = size / 2;
   const radius = size * 0.36;
   const labelRadius = radius + 14;
@@ -26,10 +28,8 @@ export function EvaluationRadarChart({ items, size = 220 }: { items: RadarItem[]
     };
   }
 
-  const hasPrevious = items.some((i) => i.previousLevel != null);
-
-  const currentPoints = items.map((item, i) => pointAt(i, item.level / 5));
-  const currentPath = currentPoints.map((p) => `${p.x},${p.y}`).join(" ");
+  const dataPoints = items.map((item, i) => pointAt(i, item.level / 5));
+  const dataPath = dataPoints.map((p) => `${p.x},${p.y}`).join(" ");
   const outerPoints = items.map((_, i) => pointAt(i, 1));
 
   const previousPoints = hasPrevious
@@ -55,27 +55,23 @@ export function EvaluationRadarChart({ items, size = 220 }: { items: RadarItem[]
         <line key={i} x1={center} y1={center} x2={p.x} y2={p.y} stroke="#e4e4e7" strokeWidth={1} />
       ))}
 
-      {/* evaluación anterior (comparación), detrás de la actual */}
+      {/* evaluación anterior (referencia gris) */}
       {previousPath && (
-        <polygon
-          points={previousPath}
-          fill="#a1a1aa"
-          fillOpacity={0.12}
-          stroke="#a1a1aa"
-          strokeWidth={1.5}
-          strokeDasharray="4 3"
-        />
+        <>
+          <polygon points={previousPath} fill="#71717a" fillOpacity={0.12} stroke="#a1a1aa" strokeWidth={1.5} strokeDasharray="4 3" />
+          {previousPoints!.map((p, i) =>
+            typeof items[i].previousLevel === "number" ? (
+              <circle key={i} cx={p.x} cy={p.y} r={3} fill="#a1a1aa" />
+            ) : null
+          )}
+        </>
       )}
-      {previousPoints &&
-        previousPoints.map((p, i) => (
-          <circle key={`prev-${i}`} cx={p.x} cy={p.y} r={3} fill="#a1a1aa" />
-        ))}
 
-      {/* área de resultados actual */}
-      <polygon points={currentPath} fill="var(--color-brand-500)" fillOpacity={0.25} stroke="var(--color-brand-600)" strokeWidth={2} />
+      {/* área de resultados */}
+      <polygon points={dataPath} fill="var(--color-brand-500)" fillOpacity={0.25} stroke="var(--color-brand-600)" strokeWidth={2} />
 
-      {/* puntos por criterio (actual) */}
-      {currentPoints.map((p, i) => (
+      {/* puntos por criterio */}
+      {dataPoints.map((p, i) => (
         <circle key={i} cx={p.x} cy={p.y} r={4} fill={pointColor(items[i].level)} />
       ))}
 
