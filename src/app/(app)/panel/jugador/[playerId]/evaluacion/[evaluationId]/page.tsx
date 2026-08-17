@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { EvaluationReportCard } from "@/components/evaluations/evaluation-report-card";
 import { PrintButton } from "@/components/print-button";
+import { getPreviousEvaluation } from "@/lib/data/evaluations";
 
 export default async function JugadorEvaluacionDetallePage({
   params,
@@ -22,6 +23,8 @@ export default async function JugadorEvaluacionDetallePage({
   ]);
 
   if (!player || !evaluation) notFound();
+
+  const previous = await getPreviousEvaluation(playerId, evaluation.created_at);
 
   return (
     <div className="flex flex-col gap-6">
@@ -45,6 +48,8 @@ export default async function JugadorEvaluacionDetallePage({
         conclusion={evaluation.conclusion}
         matchContext={evaluation.match_context}
         items={evaluation.evaluation_items}
+        previousItems={previous?.evaluation_items}
+        previousCreatedAt={previous?.created_at}
       />
     </div>
   );

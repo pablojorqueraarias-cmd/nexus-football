@@ -254,6 +254,8 @@ export default async function AdminJugadorDetallePage({
               conclusion={latest.conclusion}
               matchContext={latest.match_context}
               items={latest.evaluation_items}
+              previousItems={history[0]?.evaluation_items}
+              previousCreatedAt={history[0]?.created_at}
               actions={
                 <>
                   <Link

@@ -1,6 +1,7 @@
 interface RadarItem {
   label: string;
   level: number;
+  previousLevel?: number | null;
 }
 
 function pointColor(level: number) {
@@ -25,9 +26,16 @@ export function EvaluationRadarChart({ items, size = 220 }: { items: RadarItem[]
     };
   }
 
-  const dataPoints = items.map((item, i) => pointAt(i, item.level / 5));
-  const dataPath = dataPoints.map((p) => `${p.x},${p.y}`).join(" ");
+  const hasPrevious = items.some((i) => i.previousLevel != null);
+
+  const currentPoints = items.map((item, i) => pointAt(i, item.level / 5));
+  const currentPath = currentPoints.map((p) => `${p.x},${p.y}`).join(" ");
   const outerPoints = items.map((_, i) => pointAt(i, 1));
+
+  const previousPoints = hasPrevious
+    ? items.map((item, i) => pointAt(i, (item.previousLevel ?? item.level) / 5))
+    : null;
+  const previousPath = previousPoints?.map((p) => `${p.x},${p.y}`).join(" ");
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0">
@@ -47,11 +55,27 @@ export function EvaluationRadarChart({ items, size = 220 }: { items: RadarItem[]
         <line key={i} x1={center} y1={center} x2={p.x} y2={p.y} stroke="#e4e4e7" strokeWidth={1} />
       ))}
 
-      {/* área de resultados */}
-      <polygon points={dataPath} fill="var(--color-brand-500)" fillOpacity={0.25} stroke="var(--color-brand-600)" strokeWidth={2} />
+      {/* evaluación anterior (comparación), detrás de la actual */}
+      {previousPath && (
+        <polygon
+          points={previousPath}
+          fill="#a1a1aa"
+          fillOpacity={0.12}
+          stroke="#a1a1aa"
+          strokeWidth={1.5}
+          strokeDasharray="4 3"
+        />
+      )}
+      {previousPoints &&
+        previousPoints.map((p, i) => (
+          <circle key={`prev-${i}`} cx={p.x} cy={p.y} r={3} fill="#a1a1aa" />
+        ))}
 
-      {/* puntos por criterio */}
-      {dataPoints.map((p, i) => (
+      {/* área de resultados actual */}
+      <polygon points={currentPath} fill="var(--color-brand-500)" fillOpacity={0.25} stroke="var(--color-brand-600)" strokeWidth={2} />
+
+      {/* puntos por criterio (actual) */}
+      {currentPoints.map((p, i) => (
         <circle key={i} cx={p.x} cy={p.y} r={4} fill={pointColor(items[i].level)} />
       ))}
 

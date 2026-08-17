@@ -2,6 +2,12 @@ import { EvaluationRadarChart } from "@/components/evaluations/evaluation-radar-
 import { PHASE_LABELS, PHASE_ORDER, groupEvaluationByPhase } from "@/lib/evaluation-report";
 import { levelLabel } from "@/lib/evaluation-levels";
 
+interface EvaluationItemInput {
+  level: number | null;
+  comment?: string | null;
+  checklist_criteria: { label: string; phase: string } | null;
+}
+
 interface EvaluationReportCardProps {
   createdAt: string;
   evaluatorName: string | null;
@@ -9,11 +15,9 @@ interface EvaluationReportCardProps {
   weaknesses: string | null;
   conclusion: string | null;
   matchContext: string | null;
-  items: {
-    level: number | null;
-    comment?: string | null;
-    checklist_criteria: { label: string; phase: string } | null;
-  }[];
+  items: EvaluationItemInput[];
+  previousItems?: EvaluationItemInput[] | null;
+  previousCreatedAt?: string | null;
   actions?: React.ReactNode;
 }
 
@@ -31,9 +35,12 @@ export function EvaluationReportCard({
   conclusion,
   matchContext,
   items,
+  previousItems,
+  previousCreatedAt,
   actions,
 }: EvaluationReportCardProps) {
-  const { byPhase, totalItems, averageLevel } = groupEvaluationByPhase(items);
+  const { byPhase, totalItems, averageLevel } = groupEvaluationByPhase(items, previousItems);
+  const hasComparison = Boolean(previousItems && previousItems.length > 0);
 
   return (
     <div className="rounded-xl border border-ink-900/10 p-6">
@@ -73,6 +80,18 @@ export function EvaluationReportCard({
         </div>
       </div>
 
+      {hasComparison && (
+        <div className="mb-2 flex items-center gap-4 text-xs text-ink-900/50">
+          <span className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-brand-500" /> Evaluación actual
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full border border-dashed border-ink-900/40 bg-zinc-300" /> Evaluación
+            anterior{previousCreatedAt ? ` (${new Date(previousCreatedAt).toLocaleDateString("es-CL")})` : ""}
+          </span>
+        </div>
+      )}
+
       <div className="flex flex-col gap-6">
         {PHASE_ORDER.filter((phase) => byPhase.has(phase)).map((phase) => {
           const phaseItems = byPhase.get(phase)!;
@@ -93,6 +112,11 @@ export function EvaluationReportCard({
                         </span>
                         <span className={`shrink-0 font-bold ${levelTextColor(item.level)}`}>
                           {item.level}/5 · {levelLabel(item.level)}
+                          {item.previousLevel != null && item.previousLevel !== item.level && (
+                            <span className="ml-1 text-xs font-semibold text-ink-900/40">
+                              (antes {item.previousLevel})
+                            </span>
+                          )}
                         </span>
                       </div>
                       {item.comment && (
